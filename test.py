@@ -34,7 +34,7 @@ def test_arg(B):
 def test_call(a):
     return test_arg(a)
 
-@function(ret=Int64, args=[Int64])
+@function(ret=Int, args=[Int])
 def test_recur(a):
     if a <= 1:
         return 1

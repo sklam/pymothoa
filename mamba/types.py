@@ -17,8 +17,6 @@ class Void(BuiltinType):
     rank = 0
 
 class Int(BuiltinType):
-    from pyon.descriptor import Descriptor, instanceof
-
     rank = 10
     bitsize = 32
     signed = True
@@ -28,4 +26,7 @@ Int32=Int
 class Int64(Int):
     rank = 11
     bitsize = 64
+
+class Float(BuiltinType):
+    rank = 20
 

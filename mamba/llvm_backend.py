@@ -64,8 +64,9 @@ class LLVMTypeEngine(object):
     @classmethod
     def configure(cls, datatype):
         return {
-            types.Int : LLVMInt,
+            types.Int   : LLVMInt,
             types.Int64 : LLVMInt64,
+            types.Float : LLVMFloat,
         }[datatype]
 
 class LLVMBasicIntMixin(object):
@@ -117,11 +118,64 @@ class LLVMBasicIntMixin(object):
         
     def recv(self, val):
         return val.as_int_signed()
+
+
+class LLVMBasicFloatMixin(object):
+    def type(self):
+        return Type.double()
         
+    def constant(self, val):
+        if type(val) is float:
+            return Constant.real(self.type(), val)
+        elif type(val) in [int, long]:
+            return Constant.int(self.type(), val)
+        else:
+            raise TypeError(type(val))
+            
+    def cast(self, old, builder):
+        if old.type == self:
+            return old.value(builder)
+        elif isinstance(old.type, types.Int):
+            val = old.value(builder)
+            return builder.sitofp(val, self.type())
+        else:
+            print 'cast %s -> %s'%(old.type, self)
+            
+        assert False   
+        
+    def op_add(self, lhs, rhs, builder):
+        return builder.fadd(lhs, rhs)
+        
+    def op_sub(self, lhs, rhs, builder):
+        return builder.fsub(lhs, rhs)
+        
+    def op_mult(self, lhs, rhs, builder):
+        return builder.fmul(lhs, rhs)
+        
+    def op_div(self, lhs, rhs, builder):
+        return builder.fdiv(lhs, rhs)
+        
+    def op_lte(self, lhs, rhs, builder):
+        return builder.fcmp(FCMP_OLE, lhs, rhs)
+        
+    def __eq__(self, other):
+        return type(self) is type(other)
+    
+    def send(self, val):
+        from llvm.ee import GenericValue
+        return GenericValue.real(self.type(), val)
+        
+    def recv(self, val):
+        return val.as_real(self.type())
+        
+
 class LLVMInt(types.Int, LLVMBasicIntMixin):
     pass
     
 class LLVMInt64(types.Int64, LLVMBasicIntMixin):
+    pass
+    
+class LLVMFloat(types.Float, LLVMBasicFloatMixin):
     pass
 
 class LLVMValue(object):
@@ -407,8 +461,10 @@ class LLVMCodeGenerator(ast.NodeVisitor):
         return LLVMTempValue(fn(lval, rval, self.builder), ty)
 
     def visit_Num(self, node):
-        assert type(node.n) is int
-        return LLVMConstant(types.Int(LLVMTypeEngine), node.n)
+        if type(node.n) is int:
+            return LLVMConstant(types.Int(LLVMTypeEngine), node.n)
+        elif type(node.n) is float:
+            return LLVMConstant(types.Float(LLVMTypeEngine), node.n)
 
     def visit(self, node):
         try:

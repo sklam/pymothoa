@@ -40,11 +40,19 @@ def test_recur(a):
         return 1
     else:
         return a + test_recur(a-1)
+        
+@function(ret=Float, args=[Float])
+def test_float(a):
+    if a <= 1:
+        return 1.0
+    else:
+        return a * test_float(a/2.0) + a/2.0
 
 def call(fn, *args):
     from time import time
-    R = 500
+    R = 100
 
+    ret_llvm = fn.jit(*args)
     s = time()
     for i in xrange(R):
         ret_llvm = fn.jit(*args)
@@ -73,7 +81,7 @@ def call(fn, *args):
     elif t_python < t_llvm:
         print 'Python is faster by %f seconds (%.2fx)'%(
             t_llvm-t_python,
-            1/(t_llvm/t_python),
+            -t_llvm/t_python,
             )
 
 def main():
@@ -89,6 +97,9 @@ def main():
 
     print 'test_recur'.center(80, '-')
     call(test_recur, 100)
+
+    print 'test_float'.center(80, '-')
+    call(test_float, float(321.321e+10))
 
 if __name__ == '__main__':
     main()

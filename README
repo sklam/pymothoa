@@ -1,0 +1,9 @@
+== Install ==
+Run `python setup.py install`.
+Use `python setup.py install --user` to install a per-user copy.
+
+== Platforms ==
+Only tested on Ubuntu 10.04
+
+== LLVM Version ==
+Tested with 3.1 release.

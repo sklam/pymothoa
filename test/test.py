@@ -1,6 +1,6 @@
 
 import logging
-#logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
 from mamba.compiler import function
 from mamba.types import *
@@ -62,10 +62,16 @@ def test_double(a):
         return 1.0
     else:
         return a + test_double(a/1.1)
+        
+@function(ret=Int, args=[Int, Int])
+def test_forloop(val, repeat):
+    for i in xrange(3, repeat):
+        val = val + i 
+    return val
 
 def call(fn, *args):
     from time import time
-    R = 100
+    R = 200
 
     ret_llvm = fn.jit(*args)
     s = time()
@@ -124,6 +130,9 @@ def main():
     
     print 'test_double'.center(80, '-')
     call(test_double, 321.321e+4)
+    
+    print 'test_forloop'.center(80, '-')
+    call(test_forloop, 1, 2**10)
 
 if __name__ == '__main__':
     main()

@@ -35,10 +35,21 @@ JITEngine::JITEngine()
     fpm_->add(createReassociatePass());
     // Eliminate Common SubExpressions.
     fpm_->add(createGVNPass());
+    
+    // - ? - Unroll loop
+    fpm_->add(createIndVarSimplifyPass());
+    fpm_->add(createLoopUnrollPass());
+    
     // Simplify the control flow graph (deleting unreachable blocks, etc).
     fpm_->add(createCFGSimplificationPass());
-    // Eliminate tail recursion
+    
+    // - ? - Eliminate tail recursion
     fpm_->add(createTailCallEliminationPass());
+    
+    // - ?future? - Vectorize
+    // fpm_->add(createBBVectorizePass());
+    
+
 
     fpm_->doInitialization();
 }

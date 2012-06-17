@@ -1,6 +1,6 @@
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
 
 from mamba.compiler import function
 from mamba.types import *
@@ -18,7 +18,6 @@ def test_constant():
     B = 9
     C = A * B
     return C
-
 
 @function(ret=Int, args=[Int])
 def test_arg(B):
@@ -40,13 +39,29 @@ def test_recur(a):
         return 1
     else:
         return a + test_recur(a-1)
-        
+
+
+@function(ret=Int64, args=[Int64])
+def test_recur64(a):
+    if a <= 1:
+        return 1
+    else:
+        return a + test_recur64(a-1)
+                
+
 @function(ret=Float, args=[Float])
 def test_float(a):
     if a <= 1:
         return 1.0
     else:
-        return a * test_float(a/2.0) + a/2.0
+        return a + test_float(a/1.1)
+
+@function(ret=Double, args=[Double])
+def test_double(a):
+    if a <= 1:
+        return 1.0
+    else:
+        return a + test_double(a/1.1)
 
 def call(fn, *args):
     from time import time
@@ -70,7 +85,10 @@ def call(fn, *args):
 
     t_python = e-s
 
-    if not ret_llvm == ret_python:
+    relative_error = float(abs(ret_llvm-ret_python))/ret_python
+    
+    if relative_error > 1e-5:
+        print 'relative_error =', relative_error
         raise ValueError('Computation error!')
 
     if t_llvm < t_python:
@@ -88,18 +106,24 @@ def main():
 
     print 'test_constant'.center(80, '-')
     call(test_constant)
-
+    
     print 'test_arg'.center(80, '-')
     call(test_arg, 12)
-
+    
     print 'test_call'.center(80, '-')
     call(test_call, 9)
 
     print 'test_recur'.center(80, '-')
     call(test_recur, 100)
 
+    print 'test_recur64'.center(80, '-')
+    call(test_recur64, 120)
+
     print 'test_float'.center(80, '-')
-    call(test_float, float(321.321e+10))
+    call(test_float, 321.321e+2)
+    
+    print 'test_double'.center(80, '-')
+    call(test_double, 321.321e+4)
 
 if __name__ == '__main__':
     main()

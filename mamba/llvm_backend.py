@@ -1,19 +1,18 @@
 import logging
 import ast, inspect
-
-from llvm.core import *
+import ctypes
+from compiler import *
 
 from pyon.descriptor import Descriptor, instanceof
 
+import llvm
 import types
 
 logger = logging.getLogger(__name__)
 
 class LLVMModuleManager(object):
-    module       = Descriptor(constant=True)
-    pass_manager = Descriptor(constant=True)
-    executor     = Descriptor(constant=True)
-
+    jit_engine = Descriptor(constant=True)
+    
     def __init__(self):
         # This is a singleton class.
         # Check to ensure
@@ -21,74 +20,47 @@ class LLVMModuleManager(object):
             raise RuntimeError('%s is a singleton class.'%type(self))
         else:
             type(self).__inst_ct=1
-
-        # LLVM specific
-        from llvm.core import Module
-        from llvm import passes
-        from llvm.ee import ExecutionEngine
-
-        # Make LLVM module for JIT code
-        mod = self.module = Module.new('mamba.default')
-
-        # Make JIT executor or interpreter (depending on the platform)
-        exe = self.executor = ExecutionEngine.new(mod)
-
-        # Make LLVM function pass manager for optimization
-        pm = self.pass_manager = passes.FunctionPassManager.new(mod)
-
-        # For reference:
-        #   http://llvm.org/docs/Passes.html
-        #   llvm-as < /dev/null | opt -O2 -disable-output -debug-pass=Arguments
-
-        pm.add(exe.target_data) # register target data layout
-
-        opt_passes = [
-            passes.PASS_PROMOTE_MEMORY_TO_REGISTER,
-            passes.PASS_INSTRUCTION_COMBINING,
-            passes.PASS_REASSOCIATE,
-            passes.PASS_GVN,
-            passes.PASS_CFG_SIMPLIFICATION,
-            passes.PASS_TAIL_CALL_ELIMINATION,
-        ]
-
-        for opt_pass in opt_passes:
-            pm.add(opt_pass)
-
-        pm.initialize()
+        self.jit_engine = llvm.JITEngine()
         
     def optimize(self, fn):
-        self.pass_manager.run(fn)
+        self.jit_engine.optimize(fn)
         fn.verify()
-        
-class LLVMTypeEngine(object):
-    @classmethod
-    def configure(cls, datatype):
-        return {
-            types.Int   : LLVMInt,
-            types.Int64 : LLVMInt64,
-            types.Float : LLVMFloat,
-        }[datatype]
+
+class LLVMType(types.Type):    
+
+    def __new__(cls, datatype):
+        TYPE_MAP = {
+            types.Int32     : LLVMInt32,
+            types.Int64     : LLVMInt64,
+            types.Float     : LLVMFloat,
+            types.Double    : LLVMDouble,
+        }
+        return object.__new__(TYPE_MAP[datatype])
 
 class LLVMBasicIntMixin(object):
+    def ctype(self):
+        mapping = {32: ctypes.c_int32, 64: ctypes.c_int64}
+        return mapping[self.bitsize]
+
     def type(self):
-        return Type.int(self.bitsize)
+        return llvm.TypeFactory.make_int(self.bitsize)
         
     def constant(self, val):
         if type(val) is not int:
             raise TypeError(type(val))
         else:
-            return Constant.int(self.type(), val)
+            return llvm.ConstantFactory.make_int(self.type(), val)
             
     def cast(self, old, builder):
         if old.type == self:
             return old.value(builder)
-        elif isinstance(old.type, types.Int):
+        elif isinstance(old.type, types.GenericInt):
             assert old.type.bitsize != self.bitsize
             val = old.value(builder)
-            if old.type.bitsize > self.bitsize:
-                return builder.trunc(val, self.type())
-            else:
-                return builder.sext(val, self.type())                
+            return builder.icast(val, self.type(), self.signed)
+        elif isinstance(old.type, types.GenericReal):
+            val = old.value(builder)
+            return builder.fptosi(val, self.type())
         else:
             print 'cast %s -> %s'%(old.type, self)
             
@@ -107,37 +79,30 @@ class LLVMBasicIntMixin(object):
         return builder.sdiv(lhs, rhs)
         
     def op_lte(self, lhs, rhs, builder):
-        return builder.icmp(ICMP_SLE, lhs, rhs)
+        return builder.icmp(llvm.ICMP_SLE, lhs, rhs)
         
     def __eq__(self, other):
         return type(self) is type(other)
-    
-    def send(self, val):
-        from llvm.ee import GenericValue
-        return GenericValue.int_signed(self.type(), val)
-        
-    def recv(self, val):
-        return val.as_int_signed()
-
 
 class LLVMBasicFloatMixin(object):
+    def ctype(self):
+        return ctypes.c_float
+
     def type(self):
-        return Type.double()
+        return llvm.TypeFactory.make_float()
         
     def constant(self, val):
-        if type(val) is float:
-            return Constant.real(self.type(), val)
-        elif type(val) in [int, long]:
-            return Constant.int(self.type(), val)
-        else:
-            raise TypeError(type(val))
+        return llvm.ConstantFactory.make_real(self.type(), val)
             
     def cast(self, old, builder):
         if old.type == self:
             return old.value(builder)
-        elif isinstance(old.type, types.Int):
+        elif isinstance(old.type, types.GenericInt):
             val = old.value(builder)
             return builder.sitofp(val, self.type())
+        elif isinstance(old.type, types.GenericReal):
+            val = old.value(builder)
+            return builder.fcast(val, self.type())
         else:
             print 'cast %s -> %s'%(old.type, self)
             
@@ -156,26 +121,29 @@ class LLVMBasicFloatMixin(object):
         return builder.fdiv(lhs, rhs)
         
     def op_lte(self, lhs, rhs, builder):
-        return builder.fcmp(FCMP_OLE, lhs, rhs)
+        return builder.fcmp(llvm.FCMP_OLE, lhs, rhs)
         
     def __eq__(self, other):
         return type(self) is type(other)
-    
-    def send(self, val):
-        from llvm.ee import GenericValue
-        return GenericValue.real(self.type(), val)
-        
-    def recv(self, val):
-        return val.as_real(self.type())
-        
 
-class LLVMInt(types.Int, LLVMBasicIntMixin):
+
+class LLVMBasicDoubleMixin(LLVMBasicFloatMixin):
+    def ctype(self):
+        return ctypes.c_double
+
+    def type(self):
+        return llvm.TypeFactory.make_double()
+        
+class LLVMInt32(types.Int32, LLVMBasicIntMixin):
     pass
     
 class LLVMInt64(types.Int64, LLVMBasicIntMixin):
     pass
     
 class LLVMFloat(types.Float, LLVMBasicFloatMixin):
+    pass
+    
+class LLVMDouble(types.Float, LLVMBasicDoubleMixin):
     pass
 
 class LLVMValue(object):
@@ -198,7 +166,7 @@ class LLVMVariable(LLVMValue):
     
     def __init__(self, name, ty, builder):
         self.type = ty
-        self.pointer = builder.alloca(ty.type(), name=name)    
+        self.pointer = builder.alloc(ty.type(), name)    
         
     def value(self, builder):
         return builder.load(self.pointer)
@@ -224,15 +192,15 @@ class LLVMFunction(object):
 
     def __init__(self, orig_func, retty, argtys):
         self.code_python = orig_func
-        self.retty = retty(LLVMTypeEngine)
-        self.argtys = map(lambda X: X(LLVMTypeEngine), argtys)
+        self.retty = LLVMType(retty)
+        self.argtys = map(lambda X: LLVMType(X), argtys)
 
     def compile(self):
 
         func = self.code_python
         source = inspect.getsource(func)
 
-        logger.info('Compiling function: %s', func.__name__)
+        logger.debug('Compiling function: %s', func.__name__)
 
         tree = ast.parse(source)
 
@@ -241,7 +209,7 @@ class LLVMFunction(object):
 
         # Code generation for LLVM
         codegen = LLVMCodeGenerator(
-                        self.manager.module,
+                        self.manager.jit_engine,
                         self.retty,
                         self.argtys,
                         symbols=func.func_globals
@@ -251,48 +219,56 @@ class LLVMFunction(object):
         self.code_llvm = codegen.function
         self.code_llvm.verify()     # verify generated code
 
-        logger.debug('Dump LLVM IR\n%s', self.code_llvm)
+        logger.debug('Dump LLVM IR\n%s', self.code_llvm.dump())
 
     def optimize(self):
         self.manager.optimize(self.code_llvm)
 
-        logger.debug('Optimized llvm ir:\n%s', self.code_llvm)
+        logger.debug('Optimized llvm ir:\n%s', self.code_llvm.dump())
 
     def __call__(self, *args):
         return self.code_python(*args)
 
     def jit(self, *args):
-        args = [self.argtys[i].send(arg) for i, arg in enumerate(args)]
-
-        retval = self.manager.executor.run_function(self.code_llvm, args)
-        return self.retty.recv(retval)
+        from ctypes import CFUNCTYPE, cast
+        c_argtys = map(lambda T: T.ctype(), self.argtys)
+        c_retty = self.retty.ctype()
+        c_funcptr_t = CFUNCTYPE(c_retty, *c_argtys)
+        addr = self.manager.jit_engine.get_pointer_to_function(self.code_llvm)
+        funcptr = cast( int(addr), c_funcptr_t )
+        return funcptr(*args)
 
 class LLVMCodeGenerator(ast.NodeVisitor):
-    module        = Descriptor(constant=True)
+    jit_engine    = Descriptor(constant=True)
     retty         = Descriptor(constant=True)
     argtys        = Descriptor(constant=True)
     function      = Descriptor(constant=True)
     symbols       = Descriptor(constant=True, constrains=instanceof(dict))
 
-    def __init__(self, module, retty, argtys, symbols):
+    def __init__(self, jit_engine, retty, argtys, symbols):
         super(LLVMCodeGenerator, self).__init__()
-        self.module = module
+        self.jit_engine = jit_engine
         self.retty = retty
         self.argtys = argtys
         # symbol table
         self.symbols = symbols.copy()
 
     def visit_FunctionDef(self, node):
-        fnty = Type.function(self.retty.type(), map(lambda X: X.type(), self.argtys))
-        self.function =  self.module.add_function(fnty, node.name)
+
+        retty = self.retty.type()
+        argtys = map(lambda X: X.type(), self.argtys)
+        
+        self.function = self.jit_engine.make_function(node.name, retty, argtys)
         self.symbols[self.function.name] = self.function        
+        assert self.function.name()==node.name, (self.function.name(), node.name)
         
         # make basic block
         bb_entry = self.function.append_basic_block("entry")
         self.__blockcounter = 0
 
         # make instruction builder
-        self.builder = Builder.new(bb_entry)
+        self.builder = llvm.Builder()
+        self.builder.insert_at(bb_entry)
 
         # build arguments
         self.visit(node.args)
@@ -301,8 +277,8 @@ class LLVMCodeGenerator(ast.NodeVisitor):
         for stmt in node.body:
             self.visit(stmt)
         else:
-            if not self.is_properly_close_basicblock():
-                if self.retty == Type.void(): # no return
+            if not self.builder.is_block_closed():
+                if isinstance(self.retty, types.Void): # no return
                     self.builder.ret_void()
                 else:
                     raise MissingReturnError(self.function.name)
@@ -314,14 +290,13 @@ class LLVMCodeGenerator(ast.NodeVisitor):
         assert not node.kwarg, 'Does not support keyword argument'
         assert not node.defaults, 'Does not support default argument'
 
+        fn_args = self.function.arguments()
         for i, arg in enumerate(node.args):
             assert isinstance(arg.ctx, ast.Param)
             name = arg.id
-            self.function.args[i].name = name+'.arg'
             var = LLVMVariable(name, self.argtys[i], self.builder)
-            self.builder.store(self.function.args[i], var.pointer)
+            self.builder.store(fn_args[i], var.pointer)
             self.symbols[name] = var
-
 
     def visit_Call(self, node):
         import dialect
@@ -342,7 +317,11 @@ class LLVMCodeGenerator(ast.NodeVisitor):
             assert not node.starargs
             assert not node.kwargs
             args = map(self.visit, node.args)
-            arg_values = map(lambda X: X.value(self.builder), args)
+            arg_values = map(lambda X: LLVMTempValue(X.value(self.builder), X.type), args)
+            # cast types
+            for i, argty in enumerate(fn.argtys):
+                arg_values[i] = argty.cast(arg_values[i], self.builder)
+
             out = self.builder.call(fn.code_llvm, arg_values)
             return LLVMTempValue(out, fn.retty)
         elif fn is self.function:
@@ -350,7 +329,11 @@ class LLVMCodeGenerator(ast.NodeVisitor):
             assert not node.starargs
             assert not node.kwargs
             args = map(self.visit, node.args)
-            arg_values = map(lambda X: X.value(self.builder), args)
+            arg_values = map(lambda X: LLVMTempValue(X.value(self.builder), X.type), args)
+            # cast types
+            for i, argty in enumerate(self.argtys):
+                arg_values[i] = argty.cast(arg_values[i], self.builder)
+                
             out = self.builder.call(fn, arg_values)
             return LLVMTempValue(out, self.retty)
        
@@ -364,14 +347,11 @@ class LLVMCodeGenerator(ast.NodeVisitor):
             try: # lookup in the symbol table
                 val = self.symbols[node.id]
             except KeyError: # does not exist
+                if node.id == self.function.name():
+                    return self.function
                 raise UndefinedSymbolError(node.id)
             else: # load from stack
-                if isinstance(val, Instruction):
-                    out = self.builder.load(val)
-                    self.copy_typeinfo(out, val)
-                    return out
-                else:
-                    return val
+                return val
         else:
             assert isinstance(node.ctx, ast.Store)
             try:
@@ -394,29 +374,29 @@ class LLVMCodeGenerator(ast.NodeVisitor):
         bb_endif = self.new_basic_block('endif')
         is_endif_reachable = False
 
-        self.builder.cbranch(test, bb_if, bb_else)
+        self.builder.cond_branch(test, bb_if, bb_else)
 
 
         # true branch
-        self.builder.position_at_end(bb_if)
+        self.builder.insert_at(bb_if)
         for stmt in node.body:
             self.visit(stmt)
         else:
-            if not self.is_properly_close_basicblock():
+            if not self.builder.is_block_closed():
                 self.builder.branch(bb_endif)
                 is_endif_reachable=True
 
         # false branch
-        self.builder.position_at_end(bb_else)
+        self.builder.insert_at(bb_else)
         for stmt in node.orelse:
             self.visit(stmt)
         else:
-            if not self.is_properly_close_basicblock():
+            if not self.builder.is_block_closed():
                 self.builder.branch(bb_endif)
                 is_endif_reachable=True
 
         # endif
-        self.builder.position_at_end(bb_endif)
+        self.builder.insert_at(bb_endif)
         if not is_endif_reachable:
             self.builder.unreachable()
 
@@ -462,9 +442,9 @@ class LLVMCodeGenerator(ast.NodeVisitor):
 
     def visit_Num(self, node):
         if type(node.n) is int:
-            return LLVMConstant(types.Int(LLVMTypeEngine), node.n)
+            return LLVMConstant(LLVMType(types.Int), node.n)
         elif type(node.n) is float:
-            return LLVMConstant(types.Float(LLVMTypeEngine), node.n)
+            return LLVMConstant(LLVMType(types.Double), node.n)
 
     def visit(self, node):
         try:
@@ -477,7 +457,7 @@ class LLVMCodeGenerator(ast.NodeVisitor):
             return fn(node)
 
     def declare(self, name, ty):
-        realty = ty(LLVMTypeEngine)
+        realty = LLVMType(ty)
         if name in self.symbols:
             raise VariableRedeclarationError(name)
         
@@ -486,15 +466,4 @@ class LLVMCodeGenerator(ast.NodeVisitor):
     def new_basic_block(self, name='uname'):
         self.__blockcounter += 1
         return self.function.append_basic_block('%s_%d'%(name, self.__blockcounter))
-
-    def is_properly_close_basicblock(self):
-        '''Check the last instruction of the current basic block.
-        '''
-        bb = self.builder.basic_block
-        closing_inst_set = set(['ret', 'br', 'cbranch', 'unreachable'])
-        if len(bb.instructions)==0: return False
-        lastinst = bb.instructions[-1]
-        if lastinst.opcode_name not in closing_inst_set:
-            return False
-        return True
 

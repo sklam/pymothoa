@@ -1,13 +1,10 @@
-class Type(object):
-    
-    def __new__(cls, backend):
-        return object.__new__(backend.configure(cls))
-    
-    def __init__(self, backend):
-        pass
+class Type(object):    
+    __init__ = NotImplemented
 
 class BuiltinType(Type):
     def coerce(self, other):
+        '''Returns the type that has a higher rank.
+        '''
         if self.rank > other.rank:
             return self
         else:
@@ -16,17 +13,36 @@ class BuiltinType(Type):
 class Void(BuiltinType):
     rank = 0
 
-class Int(BuiltinType):
+class GenericInt(BuiltinType):
+    pass
+
+class Int32(GenericInt):
     rank = 10
     bitsize = 32
     signed = True
 
-Int32=Int
-
-class Int64(Int):
+class Int64(GenericInt):
     rank = 11
     bitsize = 64
+    signed = True
 
-class Float(BuiltinType):
+def _determinte_native_int_size():
+    from ctypes import c_int, c_int32, c_int64
+    if c_int is c_int32: 
+        return Int32
+    elif c_int is c_int64: 
+        return Int64
+    else:
+        raise NotImplementedError('Integer size other than 32/64-bit?')
+        
+Int=_determinte_native_int_size()
+
+class GenericReal(BuiltinType):
+    pass
+
+class Float(GenericReal):
     rank = 20
+
+class Double(GenericReal):
+    rank = 30
 

@@ -1,3 +1,5 @@
+import logging
+
 import types
 
 def function(ret=types.Void, args=[]):

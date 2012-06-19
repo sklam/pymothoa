@@ -1,4 +1,5 @@
 from time import time
+import inspect
 from contextlib import contextmanager
 
 class Timer:
@@ -19,6 +20,8 @@ class Timer:
 
 @contextmanager
 def benchmark(name1, name2):
+    CALLER = inspect.currentframe().f_back.f_back.f_code
+
     t1 = Timer()
     t2 = Timer()
     yield t1, t2
@@ -26,11 +29,24 @@ def benchmark(name1, name2):
     dt1 = t1.duration()
     dt2 = t2.duration()
 
-    template = '%s is faster by %.1fx'
+    name = '%s:%d'%(CALLER.co_name, CALLER.co_firstlineno)
+    template = '%30s | %%s is faster by %%.1fx' % name
+
     if dt1 < dt2:
-        print template % (name1, dt2/dt1)
+        msg = template % (name1, dt2/dt1)
     else:
-        print template % (name2, dt1/dt2)
+        msg = template % (name2, dt1/dt2)
+
+    BENCHMARK_SUMMARY.append(msg)
+
+BENCHMARK_SUMMARY = []
+
+def benchmark_summary():
+    print
+    print 'Benchmark Summary'.center(80, '=')
+    for m in BENCHMARK_SUMMARY:
+        print m
+    print '='*80
 
 def relative_error(expect, got):
     expect = float(expect)

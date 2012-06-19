@@ -1,6 +1,6 @@
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
 
 from mamba.compiler import function
 from mamba.types import *
@@ -67,33 +67,129 @@ def test_forloop(val, repeat):
         val = val + i
     return val
 
-def main():
-    from _util import test_and_compare
 
-    print 'test_constant'.center(80, '-')
-    test_and_compare(test_constant)
+# -------------------------------------------------------------------
 
-    print 'test_arg'.center(80, '-')
-    test_and_compare(test_arg, 12)
+import unittest
+from random import random, randint
+from numpy import array
+from ctypes import c_float
+from _util import benchmark, relative_error, benchmark_summary
 
-    print 'test_test_and_compare'.center(80, '-')
-    test_and_compare(test_call, 9)
+class Test(unittest.TestCase):
+    def setUp(self):
+        self.REP = 200
 
-    print 'test_recur'.center(80, '-')
-    test_and_compare(test_recur, 100)
+    def test_constant(self):
 
-    print 'test_recur64'.center(80, '-')
-    test_and_compare(test_recur64, 120)
+        with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
+            with timer_py:
+                for _ in xrange(self.REP):
+                    py_result = test_constant()
 
-    print 'test_float'.center(80, '-')
-    test_and_compare(test_float, 321.321e+2)
+            with timer_jit:
+                for _ in xrange(self.REP):
+                    jit_result = test_constant.jit()
 
-    print 'test_double'.center(80, '-')
-    test_and_compare(test_double, 321.321e+4)
+        self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
 
-    print 'test_forloop'.center(80, '-')
-    test_and_compare(test_forloop, 1, 2**10)
+    def test_arg(self):
+        ARG = randint(1,0xffffffff)
+        with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
+            with timer_py:
+                for _ in xrange(self.REP):
+                    py_result = test_arg(ARG)
+
+            with timer_jit:
+                for _ in xrange(self.REP):
+                    jit_result = test_arg.jit(ARG)
+
+        self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
+
+
+    def test_call(self):
+        ARG = randint(1,0xffffffff)
+        with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
+            with timer_py:
+                for _ in xrange(self.REP):
+                    py_result = test_call(ARG)
+
+            with timer_jit:
+                for _ in xrange(self.REP):
+                    jit_result = test_call.jit(ARG)
+
+        self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
+
+    def test_recur(self):
+        ARG = randint(1,100)
+        with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
+            with timer_py:
+                for _ in xrange(self.REP):
+                    py_result = test_recur(ARG)
+
+            with timer_jit:
+                for _ in xrange(self.REP):
+                    jit_result = test_recur.jit(ARG)
+
+        self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
+
+
+    def test_recur64(self):
+        ARG = randint(1,100)
+        with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
+            with timer_py:
+                for _ in xrange(self.REP):
+                    py_result = test_recur64(ARG)
+
+            with timer_jit:
+                for _ in xrange(self.REP):
+                    jit_result = test_recur64.jit(ARG)
+
+        self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
+
+    def test_float(self):
+        ARG = 321.321e+2
+        with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
+            with timer_py:
+                for _ in xrange(self.REP):
+                    py_result = test_float(ARG)
+
+            with timer_jit:
+                for _ in xrange(self.REP):
+                    jit_result = test_float.jit(ARG)
+
+        self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
+
+    def test_double(self):
+        ARG = 321.321e+4
+        with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
+            with timer_py:
+                for _ in xrange(self.REP):
+                    py_result = test_double(ARG)
+
+            with timer_jit:
+                for _ in xrange(self.REP):
+                    jit_result = test_double.jit(ARG)
+
+        self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
+
+    def test_forloop(self):
+        ARG = 1, 2**10
+        with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
+            with timer_py:
+                for _ in xrange(self.REP):
+                    py_result = test_forloop(*ARG)
+
+            with timer_jit:
+                for _ in xrange(self.REP):
+                    jit_result = test_forloop.jit(*ARG)
+
+        self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
 
 
 if __name__ == '__main__':
-    main()
+    suite = unittest.TestLoader().loadTestsFromTestCase(Test)
+    unittest.TextTestRunner(verbosity=2).run(suite)
+
+    benchmark_summary()
+

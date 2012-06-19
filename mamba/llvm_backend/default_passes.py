@@ -8,16 +8,21 @@ simplifycfg
 memdep
 indvars
 lda
+memdep
+#licm # causing  Assertion `LoopToAliasSetMap.empty() && "Didn't free loop alias sets"'
 lcssa
-licm
 loops
 loop-simplify
 loop-rotate
 loop-unswitch
 loop-unroll
 memdep
+loop-simplify
 scalar-evolution
+memdep
 bb-vectorize
+instcombine
+reassociate
 simplifycfg
 tailcallelim
 '''.splitlines()))

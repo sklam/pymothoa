@@ -4,7 +4,35 @@
 #include "llvm/Support/FormattedStream.h"
 #include "llvm/Support/Host.h"
 
-JITEngine::JITEngine()
+#include <sstream>
+
+class PassRegistryPrinter : public llvm::PassRegistrationListener{
+public:
+    std::ostringstream stringstream;
+
+    void passEnumerate(const llvm::PassInfo * pass_info){
+        stringstream << pass_info->getPassArgument() << ": "
+                     << pass_info->getPassName() << '\n';
+    }
+};
+
+static
+void CreatePasses(){
+    using namespace llvm;
+    PassRegistry &registry = *PassRegistry::getPassRegistry();
+    initializeCore(registry);
+    initializeScalarOpts(registry);
+    initializeVectorization(registry);
+//    initializeIPO(registry);
+    initializeAnalysis(registry);
+    initializeIPA(registry);
+    initializeTransformUtils(registry);
+    initializeInstCombine(registry);
+//    initializeInstrumentation(registry);
+    initializeTarget(registry);
+}
+
+JITEngine::JITEngine(std::vector<std::string> passes, bool killOnBadPass)
     : module_(0),
       ee_(0),
       last_error_("no error")
@@ -14,6 +42,9 @@ JITEngine::JITEngine()
     using namespace llvm;
     InitializeNativeTarget();
     InitializeNativeTargetAsmPrinter();
+
+    CreatePasses();
+
     LLVMContext & Context = getGlobalContext();
 
     module_ = new Module("default", Context);
@@ -23,10 +54,9 @@ JITEngine::JITEngine()
 
     EngineBuilder & engine_builder = EngineBuilder(module_).setErrorStr(&ErrStr);
     engine_builder.setEngineKind(EngineKind::JIT); // force JIT
-//    engine_builder.setOptLevel(CodeGenOpt::Aggressive);
+    // engine_builder.setOptLevel(CodeGenOpt::Aggressive);
 
     ee_ = engine_builder.create();
-
 
     if (!ee_) {
         std::cerr << "Could not create ExecutionEngine: " << ErrStr << '\n';
@@ -37,31 +67,38 @@ JITEngine::JITEngine()
 
     fpm_ = new FunctionPassManager(module_);
 
-    // Set up the optimizer pipeline.  Start with registering info about how the
-    // target lays out data structures.
-    fpm_->add(new TargetData(*ee_->getTargetData()));
-    // Promote allocas to registers.
-    fpm_->add(createPromoteMemoryToRegisterPass());
-    // Provide basic AliasAnalysis support for GVN.
-    fpm_->add(createBasicAliasAnalysisPass());
-    // Do simple "peephole" optimizations and bit-twiddling optzns.
-    fpm_->add(createInstructionCombiningPass());
-    // Reassociate expressions.
-    fpm_->add(createReassociatePass());
-    // Eliminate Common SubExpressions.
-    fpm_->add(createGVNPass());
-
-    // - ? - Unroll loop - Am I using this correctly? Cannot not see any change!
-    fpm_->add(createIndVarSimplifyPass());
-    fpm_->add(createLoopUnrollPass());
-
-    // - ? - Vectorize - Am I using this correctly
-    fpm_->add(createBBVectorizePass());
-
-    // Simplify the control flow graph (deleting unreachable blocks, etc).
-    fpm_->add(createCFGSimplificationPass());
-    // - ? - Eliminate tail recursion
-    fpm_->add(createTailCallEliminationPass());
+    PassRegistry & registry = *PassRegistry::getPassRegistry();
+    for (int i=0; i<passes.size(); ++i) {
+        const PassInfo * passinfo = registry.getPassInfo(passes[i]);
+        if (passinfo) {
+            fpm_->add(passinfo->createPass());
+        } else {
+            std::cerr << "Warning: " << passes[i] << " not found! skipped!" << std::endl;
+            if (killOnBadPass) exit(1);
+        }
+    }
+//    // Set up the optimizer pipeline.  Start with registering info about how the
+//    // target lays out data structures.
+//    fpm_->add(new TargetData(*ee_->getTargetData()));
+//    // Promote allocas to registers.
+//    fpm_->add(createPromoteMemoryToRegisterPass());
+//    // Provide basic AliasAnalysis support for GVN.
+//    fpm_->add(createBasicAliasAnalysisPass());
+//    // Do simple "peephole" optimizations and bit-twiddling optzns.
+//    fpm_->add(createInstructionCombiningPass());
+//    // Reassociate expressions.
+//    fpm_->add(createReassociatePass());
+//    // Eliminate Common SubExpressions.
+//    fpm_->add(createGVNPass());
+//    // - ? - Unroll loop - Am I using this correctly? Cannot not see any change!
+//    fpm_->add(createIndVarSimplifyPass());
+//    fpm_->add(createLoopUnrollPass());
+//    // - ? - Vectorize - Am I using this correctly
+//    fpm_->add(createBBVectorizePass());
+//    // Simplify the control flow graph (deleting unreachable blocks, etc).
+//    fpm_->add(createCFGSimplificationPass());
+//    // - ? - Eliminate tail recursion
+//    fpm_->add(createTailCallEliminationPass());
 
 
 
@@ -161,4 +198,12 @@ std::string JITEngine::dump_asm(FunctionAdaptor fn){
     fpm.doFinalization();
 
     return buffer;
+}
+
+std::string JITEngine::dump_passes(){
+    using namespace llvm;
+    PassRegistry &registry = *PassRegistry::getPassRegistry();
+    PassRegistryPrinter prp;
+    registry.enumerateWith(&prp);
+    return prp.stringstream.str();
 }

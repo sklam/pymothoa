@@ -30,6 +30,7 @@
 %include "std_vector.i"
 %include "std_string.i"
 
+%template (ArrayString) std::vector<std::string>;
 %template (ArrayInt) std::vector<int>;
 %template (ArrayTypePtr) std::vector<llvm::Type*>;
 %template (ArrayValuePtr) std::vector<llvm::Value*>;
@@ -110,8 +111,9 @@ private:
 
 class JITEngine{
 public:
-    JITEngine();
+    JITEngine(std::vector<std::string> passes, bool killOnBadPass=false);
     ~JITEngine();
+
     std::string dump();
 
     /**
@@ -120,7 +122,9 @@ public:
      *          defining a extern function declaration but has a different
      *          number of arguments.
      */
-    FunctionAdaptor make_function(const char name[], llvm::Type *result, std::vector<llvm::Type*> params);
+    FunctionAdaptor make_function(const char name[],
+                                  llvm::Type *result,
+                                  std::vector<llvm::Type*> params);
     const char * last_error() const;
     bool verify() const;
     void optimize(FunctionAdaptor func);
@@ -131,6 +135,11 @@ public:
     void start_multithreaded();
     void stop_multithreaded();
     bool is_multithreaded();
+
+    /**
+     * @return registered passes.
+     */
+    std::string dump_passes();
 private:
     JITEngine(const JITEngine&);                 //no impl
     JITEngine & operator = (const JITEngine&);   //no impl

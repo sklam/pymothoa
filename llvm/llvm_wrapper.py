@@ -95,6 +95,53 @@ class SwigPyIterator(_object):
 SwigPyIterator_swigregister = _llvm_wrapper.SwigPyIterator_swigregister
 SwigPyIterator_swigregister(SwigPyIterator)
 
+class ArrayString(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, ArrayString, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, ArrayString, name)
+    __repr__ = _swig_repr
+    def iterator(self): return _llvm_wrapper.ArrayString_iterator(self)
+    def __iter__(self): return self.iterator()
+    def __nonzero__(self): return _llvm_wrapper.ArrayString___nonzero__(self)
+    def __bool__(self): return _llvm_wrapper.ArrayString___bool__(self)
+    def __len__(self): return _llvm_wrapper.ArrayString___len__(self)
+    def pop(self): return _llvm_wrapper.ArrayString_pop(self)
+    def __getslice__(self, *args): return _llvm_wrapper.ArrayString___getslice__(self, *args)
+    def __setslice__(self, *args): return _llvm_wrapper.ArrayString___setslice__(self, *args)
+    def __delslice__(self, *args): return _llvm_wrapper.ArrayString___delslice__(self, *args)
+    def __delitem__(self, *args): return _llvm_wrapper.ArrayString___delitem__(self, *args)
+    def __getitem__(self, *args): return _llvm_wrapper.ArrayString___getitem__(self, *args)
+    def __setitem__(self, *args): return _llvm_wrapper.ArrayString___setitem__(self, *args)
+    def append(self, *args): return _llvm_wrapper.ArrayString_append(self, *args)
+    def empty(self): return _llvm_wrapper.ArrayString_empty(self)
+    def size(self): return _llvm_wrapper.ArrayString_size(self)
+    def clear(self): return _llvm_wrapper.ArrayString_clear(self)
+    def swap(self, *args): return _llvm_wrapper.ArrayString_swap(self, *args)
+    def get_allocator(self): return _llvm_wrapper.ArrayString_get_allocator(self)
+    def begin(self): return _llvm_wrapper.ArrayString_begin(self)
+    def end(self): return _llvm_wrapper.ArrayString_end(self)
+    def rbegin(self): return _llvm_wrapper.ArrayString_rbegin(self)
+    def rend(self): return _llvm_wrapper.ArrayString_rend(self)
+    def pop_back(self): return _llvm_wrapper.ArrayString_pop_back(self)
+    def erase(self, *args): return _llvm_wrapper.ArrayString_erase(self, *args)
+    def __init__(self, *args): 
+        this = _llvm_wrapper.new_ArrayString(*args)
+        try: self.this.append(this)
+        except: self.this = this
+    def push_back(self, *args): return _llvm_wrapper.ArrayString_push_back(self, *args)
+    def front(self): return _llvm_wrapper.ArrayString_front(self)
+    def back(self): return _llvm_wrapper.ArrayString_back(self)
+    def assign(self, *args): return _llvm_wrapper.ArrayString_assign(self, *args)
+    def resize(self, *args): return _llvm_wrapper.ArrayString_resize(self, *args)
+    def insert(self, *args): return _llvm_wrapper.ArrayString_insert(self, *args)
+    def reserve(self, *args): return _llvm_wrapper.ArrayString_reserve(self, *args)
+    def capacity(self): return _llvm_wrapper.ArrayString_capacity(self)
+    __swig_destroy__ = _llvm_wrapper.delete_ArrayString
+    __del__ = lambda self : None;
+ArrayString_swigregister = _llvm_wrapper.ArrayString_swigregister
+ArrayString_swigregister(ArrayString)
+
 class ArrayInt(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, ArrayInt, name, value)
@@ -374,8 +421,8 @@ class JITEngine(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, JITEngine, name)
     __repr__ = _swig_repr
-    def __init__(self): 
-        this = _llvm_wrapper.new_JITEngine()
+    def __init__(self, *args): 
+        this = _llvm_wrapper.new_JITEngine(*args)
         try: self.this.append(this)
         except: self.this = this
     __swig_destroy__ = _llvm_wrapper.delete_JITEngine
@@ -390,6 +437,7 @@ class JITEngine(_object):
     def start_multithreaded(self): return _llvm_wrapper.JITEngine_start_multithreaded(self)
     def stop_multithreaded(self): return _llvm_wrapper.JITEngine_stop_multithreaded(self)
     def is_multithreaded(self): return _llvm_wrapper.JITEngine_is_multithreaded(self)
+    def dump_passes(self): return _llvm_wrapper.JITEngine_dump_passes(self)
 JITEngine_swigregister = _llvm_wrapper.JITEngine_swigregister
 JITEngine_swigregister(JITEngine)
 

@@ -40,14 +40,12 @@ def test_recur(a):
     else:
         return a + test_recur(a-1)
 
-
 @function(ret=Int64, args=[Int64])
 def test_recur64(a):
     if a <= 1:
         return 1
     else:
         return a + test_recur64(a-1)
-
 
 @function(ret=Float, args=[Float])
 def test_float(a):
@@ -95,6 +93,7 @@ def main():
 
     print 'test_forloop'.center(80, '-')
     test_and_compare(test_forloop, 1, 2**10)
+
 
 if __name__ == '__main__':
     main()

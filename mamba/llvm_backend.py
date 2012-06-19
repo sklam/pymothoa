@@ -20,7 +20,8 @@ class LLVMModuleManager(object):
             raise RuntimeError('%s is a singleton class.'%type(self))
         else:
             type(self).__inst_ct=1
-        self.jit_engine = llvm.JITEngine()
+        from llvm_passes import DEFAULT_PASSES
+        self.jit_engine = llvm.JITEngine(DEFAULT_PASSES, True)
 
     def optimize(self, fn):
         self.jit_engine.optimize(fn)

@@ -5,24 +5,24 @@ from mamba.compiler import function
 from mamba.types import *
 from mamba.dialect import *
 
-@function(ret=Double, args=[ [Double], Int])
+@function(ret=Float, args=[ [Float], Int])
 def test_array(A, N):
-    var ( product = Double )
-    product = 1
-    for i in range(N):
-        product = product * A[i]
-    return product
+    var ( temp = Double )
+    temp = 0
+    for i in xrange(N):
+        temp = temp + A[i]
+    return temp
 
 from _util import benchmark, relative_error
 
 def main():
     from random import random
     from numpy import array
-    from ctypes import c_double
+    from ctypes import c_float
 
     print 'test_array'.center(80, '-')
     N = 1000
-    A = array(map(lambda _: random()+1, range(N)), dtype=c_double)
+    A = array(map(lambda _: random()+1, range(N)), dtype=c_float)
 
     REP = 100
 
@@ -40,7 +40,7 @@ def main():
                 jit_result = test_array.jit(A, N)
 
         print '\tResult =',  jit_result
-    assert relative_error(py_result, jit_result) < 1e-9
+    assert relative_error(py_result, jit_result) < 0.01/100
 
     print
     print 'Assembly'.center(80, '=')

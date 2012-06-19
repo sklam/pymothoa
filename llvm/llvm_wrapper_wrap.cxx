@@ -10745,6 +10745,28 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_TypeFactory_make_pointer(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  llvm::Type *arg1 = (llvm::Type *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  llvm::Type *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:TypeFactory_make_pointer",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_llvm__Type, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "TypeFactory_make_pointer" "', argument " "1"" of type '" "llvm::Type *""'"); 
+  }
+  arg1 = reinterpret_cast< llvm::Type * >(argp1);
+  result = (llvm::Type *)TypeFactory::make_pointer(arg1);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_llvm__Type, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_new_TypeFactory(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   TypeFactory *result = 0 ;
@@ -11405,6 +11427,109 @@ SWIGINTERN PyObject *_wrap_JITEngine_get_pointer_to_function(PyObject *SWIGUNUSE
   }
   result = (void *)(arg1)->get_pointer_to_function(arg2);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_void, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_JITEngine_dump_asm(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  JITEngine *arg1 = (JITEngine *) 0 ;
+  SwigValueWrapper< FunctionAdaptor > arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 ;
+  int res2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  std::string result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:JITEngine_dump_asm",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_JITEngine, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "JITEngine_dump_asm" "', argument " "1"" of type '" "JITEngine *""'"); 
+  }
+  arg1 = reinterpret_cast< JITEngine * >(argp1);
+  {
+    res2 = SWIG_ConvertPtr(obj1, &argp2, SWIGTYPE_p_FunctionAdaptor,  0  | 0);
+    if (!SWIG_IsOK(res2)) {
+      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "JITEngine_dump_asm" "', argument " "2"" of type '" "FunctionAdaptor""'"); 
+    }  
+    if (!argp2) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "JITEngine_dump_asm" "', argument " "2"" of type '" "FunctionAdaptor""'");
+    } else {
+      FunctionAdaptor * temp = reinterpret_cast< FunctionAdaptor * >(argp2);
+      arg2 = *temp;
+      if (SWIG_IsNewObj(res2)) delete temp;
+    }
+  }
+  result = (arg1)->dump_asm(arg2);
+  resultobj = SWIG_From_std_string(static_cast< std::string >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_JITEngine_start_multithreaded(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  JITEngine *arg1 = (JITEngine *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:JITEngine_start_multithreaded",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_JITEngine, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "JITEngine_start_multithreaded" "', argument " "1"" of type '" "JITEngine *""'"); 
+  }
+  arg1 = reinterpret_cast< JITEngine * >(argp1);
+  (arg1)->start_multithreaded();
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_JITEngine_stop_multithreaded(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  JITEngine *arg1 = (JITEngine *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:JITEngine_stop_multithreaded",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_JITEngine, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "JITEngine_stop_multithreaded" "', argument " "1"" of type '" "JITEngine *""'"); 
+  }
+  arg1 = reinterpret_cast< JITEngine * >(argp1);
+  (arg1)->stop_multithreaded();
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_JITEngine_is_multithreaded(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  JITEngine *arg1 = (JITEngine *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  bool result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:JITEngine_is_multithreaded",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_JITEngine, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "JITEngine_is_multithreaded" "', argument " "1"" of type '" "JITEngine *""'"); 
+  }
+  arg1 = reinterpret_cast< JITEngine * >(argp1);
+  result = (bool)(arg1)->is_multithreaded();
+  resultobj = SWIG_From_bool(static_cast< bool >(result));
   return resultobj;
 fail:
   return NULL;
@@ -14803,6 +14928,160 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_Builder_gep__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Builder *arg1 = (Builder *) 0 ;
+  llvm::Value *arg2 = (llvm::Value *) 0 ;
+  llvm::Value *arg3 = (llvm::Value *) 0 ;
+  char *arg4 = (char *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  int res4 ;
+  char *buf4 = 0 ;
+  int alloc4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  llvm::Value *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:Builder_gep",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Builder, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Builder_gep" "', argument " "1"" of type '" "Builder *""'"); 
+  }
+  arg1 = reinterpret_cast< Builder * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Builder_gep" "', argument " "2"" of type '" "llvm::Value *""'"); 
+  }
+  arg2 = reinterpret_cast< llvm::Value * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Builder_gep" "', argument " "3"" of type '" "llvm::Value *""'"); 
+  }
+  arg3 = reinterpret_cast< llvm::Value * >(argp3);
+  res4 = SWIG_AsCharPtrAndSize(obj3, &buf4, NULL, &alloc4);
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "Builder_gep" "', argument " "4"" of type '" "char const *""'");
+  }
+  arg4 = reinterpret_cast< char * >(buf4);
+  result = (llvm::Value *)(arg1)->gep(arg2,arg3,(char const *)arg4);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (alloc4 == SWIG_NEWOBJ) delete[] buf4;
+  return resultobj;
+fail:
+  if (alloc4 == SWIG_NEWOBJ) delete[] buf4;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Builder_gep__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Builder *arg1 = (Builder *) 0 ;
+  llvm::Value *arg2 = (llvm::Value *) 0 ;
+  llvm::Value *arg3 = (llvm::Value *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  llvm::Value *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:Builder_gep",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Builder, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Builder_gep" "', argument " "1"" of type '" "Builder *""'"); 
+  }
+  arg1 = reinterpret_cast< Builder * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Builder_gep" "', argument " "2"" of type '" "llvm::Value *""'"); 
+  }
+  arg2 = reinterpret_cast< llvm::Value * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Builder_gep" "', argument " "3"" of type '" "llvm::Value *""'"); 
+  }
+  arg3 = reinterpret_cast< llvm::Value * >(argp3);
+  result = (llvm::Value *)(arg1)->gep(arg2,arg3);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_llvm__Value, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Builder_gep(PyObject *self, PyObject *args) {
+  int argc;
+  PyObject *argv[5];
+  int ii;
+  
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = (int)PyObject_Length(args);
+  for (ii = 0; (ii < argc) && (ii < 4); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 3) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_Builder, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_llvm__Value, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_llvm__Value, 0);
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          return _wrap_Builder_gep__SWIG_1(self, args);
+        }
+      }
+    }
+  }
+  if (argc == 4) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_Builder, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_llvm__Value, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_llvm__Value, 0);
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          int res = SWIG_AsCharPtrAndSize(argv[3], 0, NULL, 0);
+          _v = SWIG_CheckState(res);
+          if (_v) {
+            return _wrap_Builder_gep__SWIG_0(self, args);
+          }
+        }
+      }
+    }
+  }
+  
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number of arguments for overloaded function 'Builder_gep'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    gep(Builder *,llvm::Value *,llvm::Value *,char const *)\n"
+    "    gep(Builder *,llvm::Value *,llvm::Value *)\n");
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_Builder_is_block_closed(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Builder *arg1 = (Builder *) 0 ;
@@ -14979,6 +15258,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"TypeFactory_make_float", _wrap_TypeFactory_make_float, METH_VARARGS, NULL},
 	 { (char *)"TypeFactory_make_double", _wrap_TypeFactory_make_double, METH_VARARGS, NULL},
 	 { (char *)"TypeFactory_make_void", _wrap_TypeFactory_make_void, METH_VARARGS, NULL},
+	 { (char *)"TypeFactory_make_pointer", _wrap_TypeFactory_make_pointer, METH_VARARGS, NULL},
 	 { (char *)"new_TypeFactory", _wrap_new_TypeFactory, METH_VARARGS, NULL},
 	 { (char *)"delete_TypeFactory", _wrap_delete_TypeFactory, METH_VARARGS, NULL},
 	 { (char *)"TypeFactory_swigregister", TypeFactory_swigregister, METH_VARARGS, NULL},
@@ -15008,6 +15288,10 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"JITEngine_verify", _wrap_JITEngine_verify, METH_VARARGS, NULL},
 	 { (char *)"JITEngine_optimize", _wrap_JITEngine_optimize, METH_VARARGS, NULL},
 	 { (char *)"JITEngine_get_pointer_to_function", _wrap_JITEngine_get_pointer_to_function, METH_VARARGS, NULL},
+	 { (char *)"JITEngine_dump_asm", _wrap_JITEngine_dump_asm, METH_VARARGS, NULL},
+	 { (char *)"JITEngine_start_multithreaded", _wrap_JITEngine_start_multithreaded, METH_VARARGS, NULL},
+	 { (char *)"JITEngine_stop_multithreaded", _wrap_JITEngine_stop_multithreaded, METH_VARARGS, NULL},
+	 { (char *)"JITEngine_is_multithreaded", _wrap_JITEngine_is_multithreaded, METH_VARARGS, NULL},
 	 { (char *)"JITEngine_swigregister", JITEngine_swigregister, METH_VARARGS, NULL},
 	 { (char *)"new_Builder", _wrap_new_Builder, METH_VARARGS, NULL},
 	 { (char *)"Builder_insert_at", _wrap_Builder_insert_at, METH_VARARGS, NULL},
@@ -15038,6 +15322,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Builder_store", _wrap_Builder_store, METH_VARARGS, NULL},
 	 { (char *)"Builder_call", _wrap_Builder_call, METH_VARARGS, NULL},
 	 { (char *)"Builder_unreachable", _wrap_Builder_unreachable, METH_VARARGS, NULL},
+	 { (char *)"Builder_gep", _wrap_Builder_gep, METH_VARARGS, NULL},
 	 { (char *)"Builder_is_block_closed", _wrap_Builder_is_block_closed, METH_VARARGS, NULL},
 	 { (char *)"delete_Builder", _wrap_delete_Builder, METH_VARARGS, NULL},
 	 { (char *)"Builder_swigregister", Builder_swigregister, METH_VARARGS, NULL},

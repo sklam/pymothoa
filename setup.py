@@ -20,7 +20,7 @@ def llvm_config_macros():
 def llvm_config_statis_lib():
     base = llvm_config('--libdir')
     return [base+os.sep+'lib'+i+'.a' 
-            for i in llvm_config_filter('--libs core jit native', '-l', strip=True)]
+            for i in llvm_config_filter('--libs core jit native vectorize', '-l', strip=True)]
 
 def list_file_with_extension(path, ext):
     return [path+os.sep+P for P in os.listdir(path) if P.endswith(ext)]

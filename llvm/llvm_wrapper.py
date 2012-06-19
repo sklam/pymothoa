@@ -276,6 +276,8 @@ class TypeFactory(_object):
     if _newclass:make_double = staticmethod(_llvm_wrapper.TypeFactory_make_double)
     __swig_getmethods__["make_void"] = lambda x: _llvm_wrapper.TypeFactory_make_void
     if _newclass:make_void = staticmethod(_llvm_wrapper.TypeFactory_make_void)
+    __swig_getmethods__["make_pointer"] = lambda x: _llvm_wrapper.TypeFactory_make_pointer
+    if _newclass:make_pointer = staticmethod(_llvm_wrapper.TypeFactory_make_pointer)
     def __init__(self): 
         this = _llvm_wrapper.new_TypeFactory()
         try: self.this.append(this)
@@ -300,6 +302,10 @@ TypeFactory_make_double = _llvm_wrapper.TypeFactory_make_double
 def TypeFactory_make_void():
   return _llvm_wrapper.TypeFactory_make_void()
 TypeFactory_make_void = _llvm_wrapper.TypeFactory_make_void
+
+def TypeFactory_make_pointer(*args):
+  return _llvm_wrapper.TypeFactory_make_pointer(*args)
+TypeFactory_make_pointer = _llvm_wrapper.TypeFactory_make_pointer
 
 class ConstantFactory(_object):
     __swig_setmethods__ = {}
@@ -380,6 +386,10 @@ class JITEngine(_object):
     def verify(self): return _llvm_wrapper.JITEngine_verify(self)
     def optimize(self, *args): return _llvm_wrapper.JITEngine_optimize(self, *args)
     def get_pointer_to_function(self, *args): return _llvm_wrapper.JITEngine_get_pointer_to_function(self, *args)
+    def dump_asm(self, *args): return _llvm_wrapper.JITEngine_dump_asm(self, *args)
+    def start_multithreaded(self): return _llvm_wrapper.JITEngine_start_multithreaded(self)
+    def stop_multithreaded(self): return _llvm_wrapper.JITEngine_stop_multithreaded(self)
+    def is_multithreaded(self): return _llvm_wrapper.JITEngine_is_multithreaded(self)
 JITEngine_swigregister = _llvm_wrapper.JITEngine_swigregister
 JITEngine_swigregister(JITEngine)
 
@@ -421,6 +431,7 @@ class Builder(_object):
     def store(self, *args): return _llvm_wrapper.Builder_store(self, *args)
     def call(self, *args): return _llvm_wrapper.Builder_call(self, *args)
     def unreachable(self): return _llvm_wrapper.Builder_unreachable(self)
+    def gep(self, *args): return _llvm_wrapper.Builder_gep(self, *args)
     def is_block_closed(self): return _llvm_wrapper.Builder_is_block_closed(self)
     __swig_destroy__ = _llvm_wrapper.delete_Builder
     __del__ = lambda self : None;

@@ -7,7 +7,7 @@ def function(ret=types.Void, args=[]):
         assert type(func).__name__=='function', (
                 '"%s" is not a function.'%func.__name__
         )
-        
+
         from llvm_backend import LLVMFunction
         llvmfn = LLVMFunction(func, ret, args)
         llvmfn.compile()

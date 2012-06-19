@@ -6,7 +6,7 @@
 #define EnsureFunctionValid assert(valid() && "Function is not valid");
 
 FunctionAdaptor::FunctionAdaptor(llvm::Function * fp)
-    : func_(fp) 
+    : func_(fp)
 {   }
 
 
@@ -45,7 +45,7 @@ llvm::BasicBlock * FunctionAdaptor::append_basic_block(const char name[]) {
 }
 
 std::vector<llvm::Value*> FunctionAdaptor::arguments() const{
-    EnsureFunctionValid;   
+    EnsureFunctionValid;
     typedef llvm::Function::arg_iterator arg_iterator;
 
     std::vector<llvm::Value*> args;
@@ -57,7 +57,7 @@ std::vector<llvm::Value*> FunctionAdaptor::arguments() const{
 }
 
 unsigned int FunctionAdaptor::arg_size() const{
-    EnsureFunctionValid;   
+    EnsureFunctionValid;
     return func_->arg_size();
 }
 

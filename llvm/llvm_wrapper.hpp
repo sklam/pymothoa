@@ -11,8 +11,10 @@
 #include "llvm/Analysis/Passes.h"
 #include "llvm/Target/TargetData.h"
 #include "llvm/Transforms/Scalar.h"
+#include "llvm/Transforms/Vectorize.h"
 #include "llvm/Support/IRBuilder.h"
 #include "llvm/Support/TargetSelect.h"
+#include "llvm/Support/Threading.h"
 #include <iostream>
 #include <string>
 #include <map>
@@ -67,7 +69,7 @@ enum {
 };
 
 /**
- * Always return a pointer to a singleton object. 
+ * Always return a pointer to a singleton object.
  * User should never delete the pointer.
  * Type equivalence can be tested by simple pointer comparision.
  * The same type always have the same pointer.
@@ -79,6 +81,7 @@ public:
     static llvm::Type * make_float();
     static llvm::Type * make_double();
     static llvm::Type * make_void();
+    static llvm::Type * make_pointer(llvm::Type * elemty);
 };
 
 class ConstantFactory{
@@ -95,7 +98,7 @@ public:
     const char* name() const;
     bool valid() const;
     operator bool () const;
-    std::string dump() const; 
+    std::string dump() const;
     llvm::Function * get_function() const ;
     llvm::BasicBlock * append_basic_block(const char name[]);
     std::vector<llvm::Value*> arguments() const;
@@ -110,7 +113,7 @@ public:
     JITEngine();
     ~JITEngine();
     std::string dump();
-    
+
     /**
      * @returns A FunctionAdaptor object which maybe invalid if the name
      *          of the function is already defined (with a body). Or,
@@ -122,6 +125,12 @@ public:
     bool verify() const;
     void optimize(FunctionAdaptor func);
     void * get_pointer_to_function(FunctionAdaptor fn);
+    std::string dump_asm(FunctionAdaptor fn);
+
+    // Are these 3 functions necessary? Can I just use lock in ExecutionEngine?
+    void start_multithreaded();
+    void stop_multithreaded();
+    bool is_multithreaded();
 private:
     JITEngine(const JITEngine&);                 //no impl
     JITEngine & operator = (const JITEngine&);   //no impl
@@ -129,7 +138,7 @@ private:
     llvm::Module * module_;
     llvm::ExecutionEngine * ee_;
     llvm::FunctionPassManager * fpm_;
-    
+
     std::string last_error_;
 };
 
@@ -137,45 +146,45 @@ private:
 class Builder {
 public:
     Builder();
-    
-    /** 
+
+    /**
      * Set inserter position at the end of the basic-block.
      */
     void insert_at(llvm::BasicBlock * bb);
-    llvm::BasicBlock * get_basic_block() const;    
-    
+    llvm::BasicBlock * get_basic_block() const;
+
     // integer operations
-    
+
     llvm::Value * add(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
-    
+
     llvm::Value * sub(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
-    
+
     llvm::Value * mul(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
-    
+
     llvm::Value * sdiv(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
-    
+
     llvm::Value * udiv(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
-    
+
     llvm::Value * icmp(int op, llvm::Value * lhs, llvm::Value * rhs, const char * name="");
-        
+
     // float operations
-    
+
     llvm::Value * fadd(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
-    
+
     llvm::Value * fsub(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
-    
+
     llvm::Value * fmul(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
-    
+
     llvm::Value * fdiv(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
-    
+
     llvm::Value * fcmp(int op, llvm::Value * lhs, llvm::Value * rhs, const char * name="");
-            
+
     // casting operations
-    
+
     llvm::Value * icast(llvm::Value * val, llvm::Type * ty, bool is_signed, const char * name="");
 
     llvm::Value * fcast(llvm::Value * val, llvm::Type * ty, const char * name="");
-    
+
     llvm::Value * sitofp(llvm::Value * val, llvm::Type * ty, const char * name="");
 
     llvm::Value * fptosi(llvm::Value * val, llvm::Type * ty, const char * name="");
@@ -185,32 +194,36 @@ public:
     llvm::Value * fptoui(llvm::Value * val, llvm::Type * ty, const char * name="");
 
     // control-flow operations
-    
+
     void ret(llvm::Value * retval);
-    
+
     void ret_void();
-    
+
     void branch(llvm::BasicBlock * bb);
-    
+
     void cond_branch(llvm::Value * Cond, llvm::BasicBlock * bb_true, llvm::BasicBlock * bb_false);
-    
+
     llvm::Value * alloc(llvm::Type * ty, const char * name="");
-    
+
     llvm::Value * load(llvm::Value * ptr, const char * name="");
-    
+
     llvm::Value * store(llvm::Value * val, llvm::Value * ptr);
-    
+
     llvm::Value * call(FunctionAdaptor func, std::vector<llvm::Value*> args, const char * name="");
 
     void unreachable();
-    
+
+    // pointer
+
+    llvm::Value * gep(llvm::Value * ptr, llvm::Value * idx, const char * name="");
+
     // helper
-    
+
     /**
      * @return True if the block is well formed (closed with control-float instruction).
      */
     bool is_block_closed();
-    
+
 private:
     Builder(const Builder&);                //no impl
     Builder & operator = (const Builder&);    //no impl

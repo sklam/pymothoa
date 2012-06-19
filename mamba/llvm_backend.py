@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class LLVMModuleManager(object):
     jit_engine = Descriptor(constant=True)
-    
+
     def __init__(self):
         # This is a singleton class.
         # Check to ensure
@@ -21,36 +21,62 @@ class LLVMModuleManager(object):
         else:
             type(self).__inst_ct=1
         self.jit_engine = llvm.JITEngine()
-        
+
     def optimize(self, fn):
         self.jit_engine.optimize(fn)
         fn.verify()
 
-class LLVMType(types.Type):    
+    def dump_asm(self, fn):
+        return self.jit_engine.dump_asm(fn)
+
+class LLVMType(object):
 
     def __new__(cls, datatype):
         TYPE_MAP = {
+            types.Void      : LLVMVoid,
             types.Int32     : LLVMInt32,
             types.Int64     : LLVMInt64,
             types.Float     : LLVMFloat,
             types.Double    : LLVMDouble,
         }
-        return object.__new__(TYPE_MAP[datatype])
+        try:
+            return object.__new__(TYPE_MAP[datatype])
+        except TypeError:
+            assert type(datatype) is list
+            assert len(datatype) == 1
+            elemtype = datatype[0]
+            obj = object.__new__(LLVMUnboundedArray)
+            obj.elemtype = LLVMType(elemtype)
+            return obj
+
+class LLVMVoid(types.Void):
+    def ctype(self):
+        return None
+
+    def type(self):
+        return llvm.TypeFactory.make_void()
 
 class LLVMBasicIntMixin(object):
+
+    def argument_adaptor(self, val):
+        return val
+
     def ctype(self):
-        mapping = {32: ctypes.c_int32, 64: ctypes.c_int64}
+        mapping = {
+            32: ctypes.c_int32,
+            64: ctypes.c_int64,
+        }
         return mapping[self.bitsize]
 
     def type(self):
         return llvm.TypeFactory.make_int(self.bitsize)
-        
+
     def constant(self, val):
         if type(val) is not int:
             raise TypeError(type(val))
         else:
             return llvm.ConstantFactory.make_int(self.type(), val)
-            
+
     def cast(self, old, builder):
         if old.type == self:
             return old.value(builder)
@@ -63,37 +89,41 @@ class LLVMBasicIntMixin(object):
             return builder.fptosi(val, self.type())
         else:
             print 'cast %s -> %s'%(old.type, self)
-            
-        assert False   
-        
+
+        assert False
+
     def op_add(self, lhs, rhs, builder):
         return builder.add(lhs, rhs)
-        
+
     def op_sub(self, lhs, rhs, builder):
         return builder.sub(lhs, rhs)
-        
+
     def op_mult(self, lhs, rhs, builder):
         return builder.mul(lhs, rhs)
-        
+
     def op_div(self, lhs, rhs, builder):
         return builder.sdiv(lhs, rhs)
-        
+
     def op_lte(self, lhs, rhs, builder):
         return builder.icmp(llvm.ICMP_SLE, lhs, rhs)
-        
+
     def __eq__(self, other):
         return type(self) is type(other)
 
 class LLVMBasicFloatMixin(object):
+
+    def argument_adaptor(self, val):
+        return val
+
     def ctype(self):
         return ctypes.c_float
 
     def type(self):
         return llvm.TypeFactory.make_float()
-        
+
     def constant(self, val):
         return llvm.ConstantFactory.make_real(self.type(), val)
-            
+
     def cast(self, old, builder):
         if old.type == self:
             return old.value(builder)
@@ -105,24 +135,24 @@ class LLVMBasicFloatMixin(object):
             return builder.fcast(val, self.type())
         else:
             print 'cast %s -> %s'%(old.type, self)
-            
-        assert False   
-        
+
+        assert False
+
     def op_add(self, lhs, rhs, builder):
         return builder.fadd(lhs, rhs)
-        
+
     def op_sub(self, lhs, rhs, builder):
         return builder.fsub(lhs, rhs)
-        
+
     def op_mult(self, lhs, rhs, builder):
         return builder.fmul(lhs, rhs)
-        
+
     def op_div(self, lhs, rhs, builder):
         return builder.fdiv(lhs, rhs)
-        
+
     def op_lte(self, lhs, rhs, builder):
         return builder.fcmp(llvm.FCMP_OLE, lhs, rhs)
-        
+
     def __eq__(self, other):
         return type(self) is type(other)
 
@@ -133,51 +163,75 @@ class LLVMBasicDoubleMixin(LLVMBasicFloatMixin):
 
     def type(self):
         return llvm.TypeFactory.make_double()
-        
+
 class LLVMInt32(types.Int32, LLVMBasicIntMixin):
     pass
-    
+
 class LLVMInt64(types.Int64, LLVMBasicIntMixin):
     pass
-    
+
 class LLVMFloat(types.Float, LLVMBasicFloatMixin):
     pass
-    
+
 class LLVMDouble(types.Float, LLVMBasicDoubleMixin):
     pass
+
+class LLVMUnboundedArray(types.GenericUnboundedArray):
+
+    elemtype = Descriptor(constant=True, constrains=instanceof(types.BuiltinType))
+
+    def ctype(self):
+        return ctypes.POINTER(self.elemtype.ctype())
+
+    def type(self):
+        return llvm.TypeFactory.make_pointer(self.elemtype.type())
+
+    def argument_adaptor(self, val):
+        from numpy import ndarray
+        if isinstance(val, ndarray):
+            assert val.dtype == self.elemtype.ctype()
+            return val.ctypes.data_as(self.ctype())
+        raise TypeError(type(val))
 
 class LLVMValue(object):
     type = Descriptor(constant=True)
 
     __init__ = NotImplemented
-    
-class LLVMTempValue(object):
+
+class LLVMTempValue(LLVMValue):
     temp_value = Descriptor(constant=True)
-    
+
     def __init__(self, val, ty):
         self.type = ty
         self.temp_value = val
-    
+
     def value(self, builder):
         return self.temp_value
-    
+
+class LLVMTempPointer(LLVMValue):
+    pointer = Descriptor(constant=True)
+
+    def __init__(self, ptr, ty):
+        self.type = ty
+        self.pointer = ptr
+
 class LLVMVariable(LLVMValue):
     pointer = Descriptor(constant=True)
-    
+
     def __init__(self, name, ty, builder):
         self.type = ty
-        self.pointer = builder.alloc(ty.type(), name)    
-        
+        self.pointer = builder.alloc(ty.type(), name)
+
     def value(self, builder):
         return builder.load(self.pointer)
-                
+
 class LLVMConstant(LLVMValue):
     constant = Descriptor(constant=True)
 
     def __init__(self, ty, val):
         self.type = ty
         self.constant = self.type.constant(val)
-        
+
     def value(self, builder):
         return self.constant
 
@@ -187,6 +241,9 @@ class LLVMFunction(object):
 
     code_python = Descriptor(constant=True)
     code_llvm = Descriptor(constant=True)
+
+    c_funcptr_type = Descriptor(constant=True)
+    c_funcptr = Descriptor(constant=True)
 
     manager = LLVMModuleManager() # class member
 
@@ -226,17 +283,28 @@ class LLVMFunction(object):
 
         logger.debug('Optimized llvm ir:\n%s', self.code_llvm.dump())
 
+    def assembly(self):
+        return self.manager.dump_asm(self.code_llvm)
+
     def __call__(self, *args):
         return self.code_python(*args)
 
     def jit(self, *args):
-        from ctypes import CFUNCTYPE, cast
-        c_argtys = map(lambda T: T.ctype(), self.argtys)
-        c_retty = self.retty.ctype()
-        c_funcptr_t = CFUNCTYPE(c_retty, *c_argtys)
-        addr = self.manager.jit_engine.get_pointer_to_function(self.code_llvm)
-        funcptr = cast( int(addr), c_funcptr_t )
-        return funcptr(*args)
+        # Cast the arguments to corresponding types
+        argvals = [aty.argument_adaptor(aval) for aty, aval in zip(self.argtys, args)]
+        try:
+            return self.c_funcptr(*argvals)
+        except AttributeError: # Has not create binding to the function.
+            # Obtain pointer to function from the JIT engine
+            addr = self.manager.jit_engine.get_pointer_to_function(self.code_llvm)
+            # Create binding with ctypes library
+            from ctypes import CFUNCTYPE, cast
+            c_argtys = map(lambda T: T.ctype(), self.argtys)
+            c_retty = self.retty.ctype()
+            self.c_funcptr_type = CFUNCTYPE(c_retty, *c_argtys)
+            self.c_funcptr = cast( int(addr), self.c_funcptr_type )
+            # Call the function
+            return self.c_funcptr(*argvals)
 
 class LLVMCodeGenerator(ast.NodeVisitor):
     jit_engine    = Descriptor(constant=True)
@@ -257,11 +325,11 @@ class LLVMCodeGenerator(ast.NodeVisitor):
 
         retty = self.retty.type()
         argtys = map(lambda X: X.type(), self.argtys)
-        
+
         self.function = self.jit_engine.make_function(node.name, retty, argtys)
-        self.symbols[self.function.name] = self.function        
+        self.symbols[self.function.name] = self.function
         assert self.function.name()==node.name, (self.function.name(), node.name)
-        
+
         # make basic block
         bb_entry = self.function.append_basic_block("entry")
         self.__blockcounter = 0
@@ -301,7 +369,7 @@ class LLVMCodeGenerator(ast.NodeVisitor):
     def visit_Call(self, node):
         import dialect
         fn = self.visit(node.func)
-        
+
         if type(fn) is type and issubclass(fn, dialect.Construct):
             if issubclass(fn, dialect.var):
                 assert not node.args
@@ -333,10 +401,10 @@ class LLVMCodeGenerator(ast.NodeVisitor):
             # cast types
             for i, argty in enumerate(self.argtys):
                 arg_values[i] = argty.cast(arg_values[i], self.builder)
-                
+
             out = self.builder.call(fn, arg_values)
             return LLVMTempValue(out, self.retty)
-       
+
         assert False, fn
 
     def visit_Expr(self, node):
@@ -399,18 +467,18 @@ class LLVMCodeGenerator(ast.NodeVisitor):
         self.builder.insert_at(bb_endif)
         if not is_endif_reachable:
             self.builder.unreachable()
-            
+
     def visit_For(self, node):
         assert not node.orelse, 'Else in for-loop is not supported yet'
-        
+
         iternode = node.iter
         assert isinstance(iternode, ast.Call)
         looptype = iternode.func.id
         assert looptype in ['range', 'xrange']
         assert len(iternode.args) in [1,2]
-        
+
         counter_ptr = self.declare(node.target.id, types.Int)
-        
+
         iternode_arg_N = len(iternode.args)
         if iternode_arg_N==1:
             zero = LLVMConstant(LLVMType(types.Int), 0)
@@ -421,37 +489,37 @@ class LLVMCodeGenerator(ast.NodeVisitor):
             endcountpos = 1
         else:
             assert False
-            
+
         endcount = self.visit(iternode.args[endcountpos]).value(self.builder)
         self.builder.store(initcount.value(self.builder), counter_ptr.pointer)
-        
-        bb_cond = self.new_basic_block('loopcond')      
+
+        bb_cond = self.new_basic_block('loopcond')
         bb_body = self.new_basic_block('loopbody')
         bb_incr = self.new_basic_block('loopincr')
         bb_exit = self.new_basic_block('loopexit')
-        
-        self.builder.branch(bb_cond) 
+
+        self.builder.branch(bb_cond)
 
         # condition
         self.builder.insert_at(bb_cond)
         test = self.builder.icmp(llvm.ICMP_SLT, counter_ptr.value(self.builder), endcount)
-        self.builder.cond_branch(test, bb_body, bb_exit)        
-        
+        self.builder.cond_branch(test, bb_body, bb_exit)
+
         # body
         self.builder.insert_at(bb_body)
-        
+
         for stmt in node.body:
             self.visit(stmt)
         else:
             self.builder.branch(bb_incr)
-    
+
         # incr
         self.builder.insert_at(bb_incr)
         one = LLVMConstant(LLVMType(types.Int), 1)
         counter_next = self.builder.add(counter_ptr.value(self.builder), one.value(self.builder))
         self.builder.store(counter_next, counter_ptr.pointer)
-        self.builder.branch(bb_cond) 
-        
+        self.builder.branch(bb_cond)
+
         # exit
         self.builder.insert_at(bb_exit)
 
@@ -462,13 +530,13 @@ class LLVMCodeGenerator(ast.NodeVisitor):
         lhs = self.visit(node.left)
         rhs = self.visit(node.comparators[0])
         op  = type(node.ops[0])
-    
+
         ty = lhs.type.coerce(rhs.type)
         lval = ty.cast(lhs, self.builder)
         rval = ty.cast(rhs, self.builder)
-        
+
         fn = getattr(ty, 'op_%s'%op.__name__.lower())
-        
+
         return fn(lval, rval, self.builder)
 
     def visit_Return(self, node):
@@ -487,14 +555,27 @@ class LLVMCodeGenerator(ast.NodeVisitor):
         lhs = self.visit(node.left)
         rhs = self.visit(node.right)
         op = type(node.op)
-            
+
         ty = lhs.type.coerce(rhs.type)
         lval = ty.cast(lhs, self.builder)
         rval = ty.cast(rhs, self.builder)
-        
+
         fn = getattr(ty, 'op_%s'%op.__name__.lower())
-        
+
         return LLVMTempValue(fn(lval, rval, self.builder), ty)
+
+    def visit_Subscript(self, node):
+        assert isinstance(node.slice, ast.Index)
+        ptr = self.visit(node.value)
+        idx = self.visit(node.slice.value)
+        ptr_val = ptr.value(self.builder)
+        idx_val = idx.value(self.builder)
+        ptr_offset = self.builder.gep(ptr_val, idx_val)
+        if isinstance(node.ctx, ast.Store):
+            return LLVMTempPointer(ptr_offset, ptr.type.elemtype)
+        else:
+            assert isinstance(node.ctx, ast.Load)
+            return LLVMTempValue(self.builder.load(ptr_offset), ptr.type.elemtype)
 
     def visit_Num(self, node):
         if type(node.n) is int:
@@ -516,7 +597,7 @@ class LLVMCodeGenerator(ast.NodeVisitor):
         realty = LLVMType(ty)
         if name in self.symbols:
             raise VariableRedeclarationError(name)
-        
+
         self.symbols[name] = var = LLVMVariable(name, realty, self.builder)
         return var
 

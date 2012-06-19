@@ -22,3 +22,6 @@ Type * TypeFactory::make_void(){
     return Type::getVoidTy(getGlobalContext());
 }
 
+Type * TypeFactory::make_pointer(Type * elemty){
+    return PointerType::getUnqual(elemty);
+}

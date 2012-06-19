@@ -99,11 +99,11 @@ void Builder::ret(Value * retval){
 void Builder::ret_void(){
     builder_.CreateRetVoid();
 }
-    
+
 void Builder::branch(llvm::BasicBlock * bb){
     builder_.CreateBr(bb);
 }
-    
+
 void Builder::cond_branch(Value * Cond, llvm::BasicBlock * bb_true, llvm::BasicBlock * bb_false){
     builder_.CreateCondBr(Cond, bb_true, bb_false);
 }
@@ -115,7 +115,7 @@ Value * Builder::alloc(llvm::Type * ty, const char * name){
 Value * Builder::load(Value * ptr, const char * name){
     return builder_.CreateLoad(ptr, name);
 }
-    
+
 Value * Builder::store(Value * val, Value * ptr){
     return builder_.CreateStore(val, ptr);
 }
@@ -128,8 +128,13 @@ void Builder::unreachable(){
     builder_.CreateUnreachable();
 }
 
+// pointer function
+
+Value * Builder::gep(Value * ptr, Value * idx, const char * name){
+    return builder_.CreateGEP(ptr, idx, name);
+}
 
 bool Builder::is_block_closed(){
     return get_basic_block()->getTerminator()!=0;
 }
-    
+

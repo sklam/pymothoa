@@ -8,7 +8,7 @@ def function(ret=types.Void, args=[]):
                 '"%s" is not a function.'%func.__name__
         )
 
-        from llvm_backend import LLVMFunction
+        from llvm_backend.function import LLVMFunction
         llvmfn = LLVMFunction(func, ret, args)
         llvmfn.compile()
         llvmfn.optimize()

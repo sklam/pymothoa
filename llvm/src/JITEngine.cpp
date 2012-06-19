@@ -23,7 +23,7 @@ void CreatePasses(){
     initializeCore(registry);
     initializeScalarOpts(registry);
     initializeVectorization(registry);
-//    initializeIPO(registry);
+    initializeIPO(registry);
     initializeAnalysis(registry);
     initializeIPA(registry);
     initializeTransformUtils(registry);

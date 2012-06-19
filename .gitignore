@@ -2,3 +2,5 @@
 *~
 *.o
 build/*
+test/mamba/*
+test/mamba

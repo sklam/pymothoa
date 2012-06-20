@@ -49,7 +49,7 @@ setup (name = 'PyMamba',
        author = 'Siu Kwan Lam',
 
        package_dir={'mamba.llvm_backend.llvm': 'llvm'},
-       packages = ['mamba', 'mamba.llvm_backend'],
+       packages = ['mamba', 'mamba.llvm_backend', 'mamba.util'],
 
        py_modules = ['mamba.llvm_backend.llvm.llvm_wrapper'],
 

@@ -1,7 +1,7 @@
 import logging
 import ast, inspect
 
-from pyon.descriptor import Descriptor, instanceof
+from mamba.util.descriptor import Descriptor, instanceof
 
 from module import LLVMModuleManager
 from backend import LLVMCodeGenerator
@@ -28,7 +28,7 @@ class LLVMFunction(object):
 
     def compile(self):
         from mamba.compiler_errors import CompilerError
-        from mamba import terminal_helpers as term
+        from mamba.util import terminal_helpers as term
 
         func = self.code_python
         source = inspect.getsource(func)

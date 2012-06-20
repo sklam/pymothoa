@@ -1,4 +1,4 @@
-from pyon.descriptor import Descriptor, instanceof
+from mamba.util.descriptor import Descriptor, instanceof
 
 import llvm # binding
 

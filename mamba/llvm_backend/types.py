@@ -1,6 +1,6 @@
 import ctypes
 
-from pyon.descriptor import Descriptor, instanceof
+from mamba.util.descriptor import Descriptor, instanceof
 
 from mamba import types
 import llvm # binding
@@ -32,7 +32,9 @@ class LLVMType(object):
 
                 # determine mixin classes to install
                 if isinstance(elemtype, LLVMBasicFloatMixin):
-                    mixins = (LLVMBasicFloatMixin,)
+                    mixins = (LLVMBasicFloatMixin ,)
+                elif isinstance(elemtype, LLVMBasicIntMixin):
+                    mixins = (LLVMBasicIntMixin ,)
                 else:
                     raise NotImplementedError
 

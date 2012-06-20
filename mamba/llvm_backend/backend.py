@@ -1,6 +1,6 @@
 import ast
 
-from pyon.descriptor import Descriptor, instanceof
+from mamba.util.descriptor import Descriptor, instanceof
 
 from mamba import dialect
 from mamba.compiler_errors import *

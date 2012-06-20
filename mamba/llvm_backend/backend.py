@@ -3,6 +3,7 @@ import ast
 from pyon.descriptor import Descriptor, instanceof
 
 from mamba import dialect
+from mamba.compiler_errors import *
 
 from types import *
 from values import *
@@ -51,7 +52,7 @@ class LLVMCodeGenerator(ast.NodeVisitor):
                 if isinstance(self.retty, types.Void): # no return
                     self.builder.ret_void()
                 else:
-                    raise MissingReturnError(self.function.name)
+                    raise MissingReturnError(node)
 
     def visit_arguments(self, node):
         '''Function arguments.
@@ -78,34 +79,26 @@ class LLVMCodeGenerator(ast.NodeVisitor):
                 for kw in node.keywords:
                     ty = self.visit(kw.value)
                     name = kw.arg
-                    self.declare(name, ty)
+                    try:
+                        self.declare(name, ty)
+                    except KeyError:
+                        raise VariableRedeclarationError(kw.value)
                 return
             else:
                 assert False
+
         elif isinstance(fn, LLVMFunction):
             assert not node.keywords
             assert not node.starargs
             assert not node.kwargs
             args = map(self.visit, node.args)
-            arg_values = map(lambda X: LLVMTempValue(X.value(self.builder), X.type), args)
-            # cast types
-            for i, argty in enumerate(fn.argtys):
-                arg_values[i] = argty.cast(arg_values[i], self.builder)
-
-            out = self.builder.call(fn.code_llvm, arg_values)
-            return LLVMTempValue(out, fn.retty)
+            return self.call_function(fn.code_llvm, args, fn.retty, fn.argtys)
         elif fn is self.function:
             assert not node.keywords
             assert not node.starargs
             assert not node.kwargs
             args = map(self.visit, node.args)
-            arg_values = map(lambda X: LLVMTempValue(X.value(self.builder), X.type), args)
-            # cast types
-            for i, argty in enumerate(self.argtys):
-                arg_values[i] = argty.cast(arg_values[i], self.builder)
-
-            out = self.builder.call(fn, arg_values)
-            return LLVMTempValue(out, self.retty)
+            return self.call_function(fn, args, self.retty, self.argtys)
 
         assert False, fn
 
@@ -119,7 +112,7 @@ class LLVMCodeGenerator(ast.NodeVisitor):
             except KeyError: # does not exist
                 if node.id == self.function.name():
                     return self.function
-                raise UndefinedSymbolError(node.id)
+                raise UndefinedSymbolError(node)
             else: # load from stack
                 return val
         else:
@@ -127,7 +120,7 @@ class LLVMCodeGenerator(ast.NodeVisitor):
             try:
                 return self.symbols[node.id]
             except KeyError:
-                raise UndefinedSymbolError(node.id)
+                raise UndefinedSymbolError(node)
 
     def visit_Attribute(self, node):
         if isinstance(node.ctx, ast.Load):
@@ -179,7 +172,10 @@ class LLVMCodeGenerator(ast.NodeVisitor):
         assert looptype in ['range', 'xrange']
         assert len(iternode.args) in [1,2]
 
-        counter_ptr = self.declare(node.target.id, types.Int)
+        try:
+            counter_ptr = self.declare(node.target.id, types.Int)
+        except KeyError:
+            raise VariableRedeclarationError(node.target)
 
         iternode_arg_N = len(iternode.args)
         if iternode_arg_N==1:
@@ -298,10 +294,19 @@ class LLVMCodeGenerator(ast.NodeVisitor):
     def declare(self, name, ty):
         realty = LLVMType(ty)
         if name in self.symbols:
-            raise VariableRedeclarationError(name)
+            raise KeyError(name)
 
         self.symbols[name] = var = LLVMVariable(name, realty, self.builder)
         return var
+
+    def call_function(self, fn, args, retty, argtys):
+        arg_values = map(lambda X: LLVMTempValue(X.value(self.builder), X.type), args)
+        # cast types
+        for i, argty in enumerate(argtys):
+            arg_values[i] = argty.cast(arg_values[i], self.builder)
+
+        out = self.builder.call(fn, arg_values)
+        return LLVMTempValue(out, retty)
 
     def new_basic_block(self, name='uname'):
         self.__blockcounter += 1

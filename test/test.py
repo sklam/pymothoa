@@ -13,7 +13,6 @@ def test_constant():
         B = Int,
         C = Int,
     )
-
     A = (123 + 321)*2
     B = 9
     C = A * B
@@ -78,7 +77,7 @@ from _util import benchmark, relative_error, benchmark_summary
 
 class Test(unittest.TestCase):
     def setUp(self):
-        self.REP = 200
+        self.REP = 512
 
     def test_constant(self):
 

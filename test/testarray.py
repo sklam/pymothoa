@@ -38,9 +38,9 @@ from _util import benchmark, relative_error, benchmark_summary
 
 class Test(unittest.TestCase):
     def setUp(self):
-        self.N = 1000
+        self.N = 512
         self.A = array(map(lambda _: random()+1, range(self.N)), dtype=c_float)
-        self.REP = 100
+        self.REP = 200
 
     def test_array(self):
         with benchmark('Python', 'LLVM') as (timer_py, timer_jit):

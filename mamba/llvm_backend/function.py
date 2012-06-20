@@ -27,6 +27,8 @@ class LLVMFunction(object):
         self.argtys = map(lambda X: LLVMType(X), argtys)
 
     def compile(self):
+        from mamba.compiler_errors import CompilerError
+        from mamba import terminal_helpers as term
 
         func = self.code_python
         source = inspect.getsource(func)
@@ -39,13 +41,36 @@ class LLVMFunction(object):
         assert len(tree.body)==1
 
         # Code generation for LLVM
-        codegen = LLVMCodeGenerator(
-                        self.manager.jit_engine,
-                        self.retty,
-                        self.argtys,
-                        symbols=func.func_globals
-                    )
-        codegen.visit(tree.body[0])
+        try:
+            codegen = LLVMCodeGenerator(
+                            self.manager.jit_engine,
+                            self.retty,
+                            self.argtys,
+                            symbols=func.func_globals
+                        )
+            codegen.visit(tree.body[0])
+        except CompilerError as e:
+            # Handle error and print useful information
+            modname = func.func_globals['__name__']
+            filename = func.func_globals['__file__']
+            corrsource = inspect.getsourcelines(func)
+            corrline = corrsource[0][e.line-1].rstrip()
+            corrptr = '%s^\t(in %s:%d:%d)'%(
+                            '-'*(e.col),
+                            filename,
+                            corrsource[1]+e.line-1,
+                            e.col+1)
+            template = '\n'.join([term.header('\nWhen compiling function "%s.%s":'),
+                       term.fail('%s'),
+                       '%s'])
+            msg = template %(
+                    modname,
+                    func.func_name,
+                    corrline,
+                    corrptr,
+                )
+
+            raise CompilerError(e, msg)
 
         self.code_llvm = codegen.function
         self.code_llvm.verify()     # verify generated code

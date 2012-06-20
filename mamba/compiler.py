@@ -9,25 +9,12 @@ def function(ret=types.Void, args=[]):
         )
 
         from llvm_backend.function import LLVMFunction
+
         llvmfn = LLVMFunction(func, ret, args)
         llvmfn.compile()
         llvmfn.optimize()
+
         return llvmfn
 
     return wrapper
-
-#-------------------------------------------------
-
-class CompilerError(Exception):
-    pass
-
-class VariableRedeclarationError(CompilerError):
-    pass
-
-class UndefinedSymbolError(CompilerError):
-    pass
-
-class MissingReturnError(CompilerError):
-    pass
-
 

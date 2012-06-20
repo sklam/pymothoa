@@ -85,10 +85,11 @@ class LLVMFunction(object):
     def assembly(self):
         return self.manager.dump_asm(self.code_llvm)
 
-    def __call__(self, *args):
+
+    def run_py(self, *args):
         return self.code_python(*args)
 
-    def jit(self, *args):
+    def run_jit(self, *args):
         # Cast the arguments to corresponding types
         argvals = [aty.argument_adaptor(aval) for aty, aval in zip(self.argtys, args)]
         try:
@@ -105,3 +106,5 @@ class LLVMFunction(object):
             # Call the function
             return self.c_funcptr(*argvals)
 
+
+    __call__ = run_jit

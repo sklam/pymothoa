@@ -1,4 +1,4 @@
-class Type(object):    
+class Type(object):
     __init__ = NotImplemented
 
 class BuiltinType(Type):
@@ -28,13 +28,13 @@ class Int64(GenericInt):
 
 def _determine_native_int_size():
     from ctypes import c_int, c_int32, c_int64
-    if c_int is c_int32: 
+    if c_int is c_int32:
         return Int32
-    elif c_int is c_int64: 
+    elif c_int is c_int64:
         return Int64
     else:
         raise NotImplementedError('Integer size other than 32/64-bit?')
-        
+
 Int = _determine_native_int_size()
 
 class GenericReal(BuiltinType):
@@ -46,10 +46,14 @@ class Float(GenericReal):
 class Double(GenericReal):
     rank = 30
 
-
 class AggregateType(Type):
     pass
-    
+
 class GenericUnboundedArray(AggregateType):
     pass
-        
+
+class GenericVector(Type):
+    pass
+
+def Vector(ty, ct):
+    pass

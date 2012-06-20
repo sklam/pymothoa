@@ -124,6 +124,7 @@ Value * Builder::call(FunctionAdaptor func, std::vector<Value*> args, const char
     return builder_.CreateCall(func.get_function(), args, name);
 }
 
+
 void Builder::unreachable(){
     builder_.CreateUnreachable();
 }
@@ -132,6 +133,20 @@ void Builder::unreachable(){
 
 Value * Builder::gep(Value * ptr, Value * idx, const char * name){
     return builder_.CreateGEP(ptr, idx, name);
+}
+
+Value * Builder::gep2(Value * ptr, std::vector<Value*> indices, const char * name){
+    return builder_.CreateGEP(ptr, indices, name);
+}
+
+// vector function
+
+Value * Builder::extract_element(Value * vector, Value * idx, const char * name){
+    return builder_.CreateExtractElement(vector, idx, name);
+}
+
+Value * Builder::insert_element(Value * vector, Value * newvalue, Value * idx, const char * name){
+    return builder_.CreateInsertElement(vector, newvalue, idx, name);
 }
 
 bool Builder::is_block_closed(){

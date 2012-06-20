@@ -25,3 +25,8 @@ Type * TypeFactory::make_void(){
 Type * TypeFactory::make_pointer(Type * elemty){
     return PointerType::getUnqual(elemty);
 }
+
+Type * TypeFactory::make_vector(Type * elemty, unsigned int elemct){
+    return VectorType::get(elemty, elemct);
+}
+

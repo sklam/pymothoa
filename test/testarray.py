@@ -13,6 +13,8 @@ def test_array(A, N):
         temp = temp + A[i]
     return temp
 
+test_array_py = test_array.run_py
+
 
 @function(ret=Float, args=[ [Float], Int])
 def test_array2(A, N):
@@ -28,6 +30,8 @@ def test_array2(A, N):
         result = result + temp
     return temp
 
+test_array2_py = test_array2.run_py
+
 # -------------------------------------------------------------------
 
 import unittest
@@ -38,19 +42,19 @@ from _util import benchmark, relative_error, benchmark_summary
 
 class Test(unittest.TestCase):
     def setUp(self):
-        self.N = 512
+        self.N = 256
         self.A = array(map(lambda _: random()+1, range(self.N)), dtype=c_float)
-        self.REP = 200
+        self.REP = 512
 
     def test_array(self):
         with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
             with timer_py:
                 for _ in xrange(self.REP):
-                    py_result = test_array(self.A, self.N)
+                    py_result = test_array_py(self.A, self.N)
 
             with timer_jit:
                 for _ in xrange(self.REP):
-                    jit_result = test_array.jit(self.A, self.N)
+                    jit_result = test_array(self.A, self.N)
 
         self.assertTrue(relative_error(py_result, jit_result) < 0.01/100)
 
@@ -58,11 +62,11 @@ class Test(unittest.TestCase):
         with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
             with timer_py:
                 for _ in xrange(self.REP):
-                    py_result = test_array(self.A, self.N)
+                    py_result = test_array_py(self.A, self.N)
 
             with timer_jit:
                 for _ in xrange(self.REP):
-                    jit_result = test_array.jit(self.A, self.N)
+                    jit_result = test_array(self.A, self.N)
 
         self.assertTrue(relative_error(py_result, jit_result) < 0.01/100)
 
@@ -71,7 +75,7 @@ if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Test)
     unittest.TextTestRunner(verbosity=2).run(suite)
 
-    if True:
+    if False:
         print 'Assembly'.center(80, '=')
         print test_array2.assembly()
         print 'End Assembly'.center(80, '=')

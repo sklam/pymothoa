@@ -12659,6 +12659,37 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_TypeFactory_make_vector(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  llvm::Type *arg1 = (llvm::Type *) 0 ;
+  unsigned int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  unsigned int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  llvm::Type *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:TypeFactory_make_vector",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_llvm__Type, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "TypeFactory_make_vector" "', argument " "1"" of type '" "llvm::Type *""'"); 
+  }
+  arg1 = reinterpret_cast< llvm::Type * >(argp1);
+  ecode2 = SWIG_AsVal_unsigned_SS_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "TypeFactory_make_vector" "', argument " "2"" of type '" "unsigned int""'");
+  } 
+  arg2 = static_cast< unsigned int >(val2);
+  result = (llvm::Type *)TypeFactory::make_vector(arg1,arg2);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_llvm__Type, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_new_TypeFactory(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   TypeFactory *result = 0 ;
@@ -17082,6 +17113,498 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_Builder_gep2__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Builder *arg1 = (Builder *) 0 ;
+  llvm::Value *arg2 = (llvm::Value *) 0 ;
+  std::vector< llvm::Value *,std::allocator< llvm::Value * > > arg3 ;
+  char *arg4 = (char *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  int res4 ;
+  char *buf4 = 0 ;
+  int alloc4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  llvm::Value *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:Builder_gep2",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Builder, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Builder_gep2" "', argument " "1"" of type '" "Builder *""'"); 
+  }
+  arg1 = reinterpret_cast< Builder * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Builder_gep2" "', argument " "2"" of type '" "llvm::Value *""'"); 
+  }
+  arg2 = reinterpret_cast< llvm::Value * >(argp2);
+  {
+    std::vector<llvm::Value*,std::allocator< llvm::Value * > > *ptr = (std::vector<llvm::Value*,std::allocator< llvm::Value * > > *)0;
+    int res = swig::asptr(obj2, &ptr);
+    if (!SWIG_IsOK(res) || !ptr) {
+      SWIG_exception_fail(SWIG_ArgError((ptr ? res : SWIG_TypeError)), "in method '" "Builder_gep2" "', argument " "3"" of type '" "std::vector< llvm::Value *,std::allocator< llvm::Value * > >""'"); 
+    }
+    arg3 = *ptr;
+    if (SWIG_IsNewObj(res)) delete ptr;
+  }
+  res4 = SWIG_AsCharPtrAndSize(obj3, &buf4, NULL, &alloc4);
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "Builder_gep2" "', argument " "4"" of type '" "char const *""'");
+  }
+  arg4 = reinterpret_cast< char * >(buf4);
+  result = (llvm::Value *)(arg1)->gep2(arg2,arg3,(char const *)arg4);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (alloc4 == SWIG_NEWOBJ) delete[] buf4;
+  return resultobj;
+fail:
+  if (alloc4 == SWIG_NEWOBJ) delete[] buf4;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Builder_gep2__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Builder *arg1 = (Builder *) 0 ;
+  llvm::Value *arg2 = (llvm::Value *) 0 ;
+  std::vector< llvm::Value *,std::allocator< llvm::Value * > > arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  llvm::Value *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:Builder_gep2",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Builder, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Builder_gep2" "', argument " "1"" of type '" "Builder *""'"); 
+  }
+  arg1 = reinterpret_cast< Builder * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Builder_gep2" "', argument " "2"" of type '" "llvm::Value *""'"); 
+  }
+  arg2 = reinterpret_cast< llvm::Value * >(argp2);
+  {
+    std::vector<llvm::Value*,std::allocator< llvm::Value * > > *ptr = (std::vector<llvm::Value*,std::allocator< llvm::Value * > > *)0;
+    int res = swig::asptr(obj2, &ptr);
+    if (!SWIG_IsOK(res) || !ptr) {
+      SWIG_exception_fail(SWIG_ArgError((ptr ? res : SWIG_TypeError)), "in method '" "Builder_gep2" "', argument " "3"" of type '" "std::vector< llvm::Value *,std::allocator< llvm::Value * > >""'"); 
+    }
+    arg3 = *ptr;
+    if (SWIG_IsNewObj(res)) delete ptr;
+  }
+  result = (llvm::Value *)(arg1)->gep2(arg2,arg3);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_llvm__Value, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Builder_gep2(PyObject *self, PyObject *args) {
+  int argc;
+  PyObject *argv[5];
+  int ii;
+  
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = (int)PyObject_Length(args);
+  for (ii = 0; (ii < argc) && (ii < 4); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 3) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_Builder, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_llvm__Value, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        int res = swig::asptr(argv[2], (std::vector<llvm::Value*,std::allocator< llvm::Value * > >**)(0));
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          return _wrap_Builder_gep2__SWIG_1(self, args);
+        }
+      }
+    }
+  }
+  if (argc == 4) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_Builder, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_llvm__Value, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        int res = swig::asptr(argv[2], (std::vector<llvm::Value*,std::allocator< llvm::Value * > >**)(0));
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          int res = SWIG_AsCharPtrAndSize(argv[3], 0, NULL, 0);
+          _v = SWIG_CheckState(res);
+          if (_v) {
+            return _wrap_Builder_gep2__SWIG_0(self, args);
+          }
+        }
+      }
+    }
+  }
+  
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number of arguments for overloaded function 'Builder_gep2'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    gep2(Builder *,llvm::Value *,std::vector< llvm::Value *,std::allocator< llvm::Value * > >,char const *)\n"
+    "    gep2(Builder *,llvm::Value *,std::vector< llvm::Value *,std::allocator< llvm::Value * > >)\n");
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Builder_extract_element__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Builder *arg1 = (Builder *) 0 ;
+  llvm::Value *arg2 = (llvm::Value *) 0 ;
+  llvm::Value *arg3 = (llvm::Value *) 0 ;
+  char *arg4 = (char *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  int res4 ;
+  char *buf4 = 0 ;
+  int alloc4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  llvm::Value *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:Builder_extract_element",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Builder, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Builder_extract_element" "', argument " "1"" of type '" "Builder *""'"); 
+  }
+  arg1 = reinterpret_cast< Builder * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Builder_extract_element" "', argument " "2"" of type '" "llvm::Value *""'"); 
+  }
+  arg2 = reinterpret_cast< llvm::Value * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Builder_extract_element" "', argument " "3"" of type '" "llvm::Value *""'"); 
+  }
+  arg3 = reinterpret_cast< llvm::Value * >(argp3);
+  res4 = SWIG_AsCharPtrAndSize(obj3, &buf4, NULL, &alloc4);
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "Builder_extract_element" "', argument " "4"" of type '" "char const *""'");
+  }
+  arg4 = reinterpret_cast< char * >(buf4);
+  result = (llvm::Value *)(arg1)->extract_element(arg2,arg3,(char const *)arg4);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (alloc4 == SWIG_NEWOBJ) delete[] buf4;
+  return resultobj;
+fail:
+  if (alloc4 == SWIG_NEWOBJ) delete[] buf4;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Builder_extract_element__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Builder *arg1 = (Builder *) 0 ;
+  llvm::Value *arg2 = (llvm::Value *) 0 ;
+  llvm::Value *arg3 = (llvm::Value *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  llvm::Value *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:Builder_extract_element",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Builder, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Builder_extract_element" "', argument " "1"" of type '" "Builder *""'"); 
+  }
+  arg1 = reinterpret_cast< Builder * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Builder_extract_element" "', argument " "2"" of type '" "llvm::Value *""'"); 
+  }
+  arg2 = reinterpret_cast< llvm::Value * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Builder_extract_element" "', argument " "3"" of type '" "llvm::Value *""'"); 
+  }
+  arg3 = reinterpret_cast< llvm::Value * >(argp3);
+  result = (llvm::Value *)(arg1)->extract_element(arg2,arg3);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_llvm__Value, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Builder_extract_element(PyObject *self, PyObject *args) {
+  int argc;
+  PyObject *argv[5];
+  int ii;
+  
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = (int)PyObject_Length(args);
+  for (ii = 0; (ii < argc) && (ii < 4); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 3) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_Builder, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_llvm__Value, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_llvm__Value, 0);
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          return _wrap_Builder_extract_element__SWIG_1(self, args);
+        }
+      }
+    }
+  }
+  if (argc == 4) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_Builder, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_llvm__Value, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_llvm__Value, 0);
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          int res = SWIG_AsCharPtrAndSize(argv[3], 0, NULL, 0);
+          _v = SWIG_CheckState(res);
+          if (_v) {
+            return _wrap_Builder_extract_element__SWIG_0(self, args);
+          }
+        }
+      }
+    }
+  }
+  
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number of arguments for overloaded function 'Builder_extract_element'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    extract_element(Builder *,llvm::Value *,llvm::Value *,char const *)\n"
+    "    extract_element(Builder *,llvm::Value *,llvm::Value *)\n");
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Builder_insert_element__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Builder *arg1 = (Builder *) 0 ;
+  llvm::Value *arg2 = (llvm::Value *) 0 ;
+  llvm::Value *arg3 = (llvm::Value *) 0 ;
+  llvm::Value *arg4 = (llvm::Value *) 0 ;
+  char *arg5 = (char *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  void *argp4 = 0 ;
+  int res4 = 0 ;
+  int res5 ;
+  char *buf5 = 0 ;
+  int alloc5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  llvm::Value *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:Builder_insert_element",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Builder, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Builder_insert_element" "', argument " "1"" of type '" "Builder *""'"); 
+  }
+  arg1 = reinterpret_cast< Builder * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Builder_insert_element" "', argument " "2"" of type '" "llvm::Value *""'"); 
+  }
+  arg2 = reinterpret_cast< llvm::Value * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Builder_insert_element" "', argument " "3"" of type '" "llvm::Value *""'"); 
+  }
+  arg3 = reinterpret_cast< llvm::Value * >(argp3);
+  res4 = SWIG_ConvertPtr(obj3, &argp4,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "Builder_insert_element" "', argument " "4"" of type '" "llvm::Value *""'"); 
+  }
+  arg4 = reinterpret_cast< llvm::Value * >(argp4);
+  res5 = SWIG_AsCharPtrAndSize(obj4, &buf5, NULL, &alloc5);
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "Builder_insert_element" "', argument " "5"" of type '" "char const *""'");
+  }
+  arg5 = reinterpret_cast< char * >(buf5);
+  result = (llvm::Value *)(arg1)->insert_element(arg2,arg3,arg4,(char const *)arg5);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (alloc5 == SWIG_NEWOBJ) delete[] buf5;
+  return resultobj;
+fail:
+  if (alloc5 == SWIG_NEWOBJ) delete[] buf5;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Builder_insert_element__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Builder *arg1 = (Builder *) 0 ;
+  llvm::Value *arg2 = (llvm::Value *) 0 ;
+  llvm::Value *arg3 = (llvm::Value *) 0 ;
+  llvm::Value *arg4 = (llvm::Value *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  void *argp4 = 0 ;
+  int res4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  llvm::Value *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:Builder_insert_element",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Builder, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Builder_insert_element" "', argument " "1"" of type '" "Builder *""'"); 
+  }
+  arg1 = reinterpret_cast< Builder * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Builder_insert_element" "', argument " "2"" of type '" "llvm::Value *""'"); 
+  }
+  arg2 = reinterpret_cast< llvm::Value * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Builder_insert_element" "', argument " "3"" of type '" "llvm::Value *""'"); 
+  }
+  arg3 = reinterpret_cast< llvm::Value * >(argp3);
+  res4 = SWIG_ConvertPtr(obj3, &argp4,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "Builder_insert_element" "', argument " "4"" of type '" "llvm::Value *""'"); 
+  }
+  arg4 = reinterpret_cast< llvm::Value * >(argp4);
+  result = (llvm::Value *)(arg1)->insert_element(arg2,arg3,arg4);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_llvm__Value, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Builder_insert_element(PyObject *self, PyObject *args) {
+  int argc;
+  PyObject *argv[6];
+  int ii;
+  
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = (int)PyObject_Length(args);
+  for (ii = 0; (ii < argc) && (ii < 5); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 4) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_Builder, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_llvm__Value, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_llvm__Value, 0);
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          void *vptr = 0;
+          int res = SWIG_ConvertPtr(argv[3], &vptr, SWIGTYPE_p_llvm__Value, 0);
+          _v = SWIG_CheckState(res);
+          if (_v) {
+            return _wrap_Builder_insert_element__SWIG_1(self, args);
+          }
+        }
+      }
+    }
+  }
+  if (argc == 5) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_Builder, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_llvm__Value, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_llvm__Value, 0);
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          void *vptr = 0;
+          int res = SWIG_ConvertPtr(argv[3], &vptr, SWIGTYPE_p_llvm__Value, 0);
+          _v = SWIG_CheckState(res);
+          if (_v) {
+            int res = SWIG_AsCharPtrAndSize(argv[4], 0, NULL, 0);
+            _v = SWIG_CheckState(res);
+            if (_v) {
+              return _wrap_Builder_insert_element__SWIG_0(self, args);
+            }
+          }
+        }
+      }
+    }
+  }
+  
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number of arguments for overloaded function 'Builder_insert_element'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    insert_element(Builder *,llvm::Value *,llvm::Value *,llvm::Value *,char const *)\n"
+    "    insert_element(Builder *,llvm::Value *,llvm::Value *,llvm::Value *)\n");
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_Builder_is_block_closed(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Builder *arg1 = (Builder *) 0 ;
@@ -17293,6 +17816,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"TypeFactory_make_double", _wrap_TypeFactory_make_double, METH_VARARGS, NULL},
 	 { (char *)"TypeFactory_make_void", _wrap_TypeFactory_make_void, METH_VARARGS, NULL},
 	 { (char *)"TypeFactory_make_pointer", _wrap_TypeFactory_make_pointer, METH_VARARGS, NULL},
+	 { (char *)"TypeFactory_make_vector", _wrap_TypeFactory_make_vector, METH_VARARGS, NULL},
 	 { (char *)"new_TypeFactory", _wrap_new_TypeFactory, METH_VARARGS, NULL},
 	 { (char *)"delete_TypeFactory", _wrap_delete_TypeFactory, METH_VARARGS, NULL},
 	 { (char *)"TypeFactory_swigregister", TypeFactory_swigregister, METH_VARARGS, NULL},
@@ -17358,6 +17882,9 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Builder_call", _wrap_Builder_call, METH_VARARGS, NULL},
 	 { (char *)"Builder_unreachable", _wrap_Builder_unreachable, METH_VARARGS, NULL},
 	 { (char *)"Builder_gep", _wrap_Builder_gep, METH_VARARGS, NULL},
+	 { (char *)"Builder_gep2", _wrap_Builder_gep2, METH_VARARGS, NULL},
+	 { (char *)"Builder_extract_element", _wrap_Builder_extract_element, METH_VARARGS, NULL},
+	 { (char *)"Builder_insert_element", _wrap_Builder_insert_element, METH_VARARGS, NULL},
 	 { (char *)"Builder_is_block_closed", _wrap_Builder_is_block_closed, METH_VARARGS, NULL},
 	 { (char *)"delete_Builder", _wrap_delete_Builder, METH_VARARGS, NULL},
 	 { (char *)"Builder_swigregister", Builder_swigregister, METH_VARARGS, NULL},

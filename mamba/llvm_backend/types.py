@@ -19,12 +19,34 @@ class LLVMType(object):
         try:
             return object.__new__(TYPE_MAP[datatype])
         except TypeError:
-            assert type(datatype) is list
-            assert len(datatype) == 1
-            elemtype = datatype[0]
-            obj = object.__new__(LLVMUnboundedArray)
-            obj.elemtype = LLVMType(elemtype)
-            return obj
+                assert type(datatype) is list
+                assert len(datatype) == 1
+                elemtype = datatype[0]
+                obj = object.__new__(LLVMUnboundedArray)
+                obj.elemtype = LLVMType(elemtype)
+                return obj
+        except KeyError:
+            if type(datatype) is type and issubclass(datatype, types.GenericVector):
+                elemtype = LLVMType(datatype.elemtype)
+                elemcount = datatype.elemcount
+
+                # determine mixin classes to install
+                if isinstance(elemtype, LLVMBasicFloatMixin):
+                    mixins = (LLVMBasicFloatMixin,)
+                else:
+                    raise NotImplementedError
+
+                # create new class for the vector type
+                clsname = 'LLVMVector__%s%d'%(datatype.elemtype.__name__, elemcount)
+                vectorcls = type(clsname, (LLVMVector,)+mixins, {})
+                # create instance of the class
+                obj = object.__new__(vectorcls)
+                obj.elemtype = elemtype
+                obj.elemcount = elemcount
+                return obj
+            else:
+                raise TypeError(datatype)
+
 
 class LLVMVoid(types.Void):
     def ctype(self):
@@ -169,3 +191,21 @@ class LLVMUnboundedArray(types.GenericUnboundedArray):
             assert val.dtype == self.elemtype.ctype()
             return val.ctypes.data_as(self.ctype())
         raise TypeError(type(val))
+
+class LLVMVector(types.GenericVector):
+    elemtype = Descriptor(constant=True, constrains=instanceof(types.BuiltinType))
+    elemcount = Descriptor(constant=True, constrains=lambda N: N>1)
+
+    def type(self):
+        return llvm.TypeFactory.make_vector(self.elemtype.type(), self.elemcount)
+
+    def cast(self, old, builder):
+        assert isinstance(old.type, LLVMVector)
+        assert old.type.elemtype == self.elemtype
+        return old.value(builder)
+
+    def coerce(self, other):
+        assert isinstance(other, LLVMVector)
+        assert other.elemtype == self.elemtype
+        return self
+

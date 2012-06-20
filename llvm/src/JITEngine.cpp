@@ -68,7 +68,7 @@ JITEngine::JITEngine(std::vector<std::string> passes, bool killOnBadPass)
     fpm_ = new FunctionPassManager(module_);
 
     PassRegistry & registry = *PassRegistry::getPassRegistry();
-    for (int i=0; i<passes.size(); ++i) {
+    for (size_t i=0; i<passes.size(); ++i) {
         const PassInfo * passinfo = registry.getPassInfo(passes[i]);
         if (passinfo) {
             fpm_->add(passinfo->createPass());

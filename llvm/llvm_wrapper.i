@@ -56,6 +56,7 @@ public:
     static llvm::Type * make_double();
     static llvm::Type * make_void();
     static llvm::Type * make_pointer(llvm::Type * elemty);
+    static llvm::Type * make_vector(llvm::Type * elemty, unsigned int elemct);
 };
 
 class ConstantFactory{
@@ -198,6 +199,13 @@ public:
     // pointer
 
     llvm::Value * gep(llvm::Value * ptr, llvm::Value * idx, const char * name="");
+    llvm::Value * gep2(llvm::Value * ptr, std::vector<llvm::Value*> indices, const char * name="");
+
+    // vector function
+
+    llvm::Value * extract_element(llvm::Value * vector, llvm::Value * idx, const char * name="");
+
+    llvm::Value * insert_element(llvm::Value * vector, llvm::Value * newvalue, llvm::Value * idx, const char * name="");
 
     // helper
 

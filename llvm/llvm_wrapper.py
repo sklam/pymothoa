@@ -325,6 +325,8 @@ class TypeFactory(_object):
     if _newclass:make_void = staticmethod(_llvm_wrapper.TypeFactory_make_void)
     __swig_getmethods__["make_pointer"] = lambda x: _llvm_wrapper.TypeFactory_make_pointer
     if _newclass:make_pointer = staticmethod(_llvm_wrapper.TypeFactory_make_pointer)
+    __swig_getmethods__["make_vector"] = lambda x: _llvm_wrapper.TypeFactory_make_vector
+    if _newclass:make_vector = staticmethod(_llvm_wrapper.TypeFactory_make_vector)
     def __init__(self): 
         this = _llvm_wrapper.new_TypeFactory()
         try: self.this.append(this)
@@ -353,6 +355,10 @@ TypeFactory_make_void = _llvm_wrapper.TypeFactory_make_void
 def TypeFactory_make_pointer(*args):
   return _llvm_wrapper.TypeFactory_make_pointer(*args)
 TypeFactory_make_pointer = _llvm_wrapper.TypeFactory_make_pointer
+
+def TypeFactory_make_vector(*args):
+  return _llvm_wrapper.TypeFactory_make_vector(*args)
+TypeFactory_make_vector = _llvm_wrapper.TypeFactory_make_vector
 
 class ConstantFactory(_object):
     __swig_setmethods__ = {}
@@ -480,6 +486,9 @@ class Builder(_object):
     def call(self, *args): return _llvm_wrapper.Builder_call(self, *args)
     def unreachable(self): return _llvm_wrapper.Builder_unreachable(self)
     def gep(self, *args): return _llvm_wrapper.Builder_gep(self, *args)
+    def gep2(self, *args): return _llvm_wrapper.Builder_gep2(self, *args)
+    def extract_element(self, *args): return _llvm_wrapper.Builder_extract_element(self, *args)
+    def insert_element(self, *args): return _llvm_wrapper.Builder_insert_element(self, *args)
     def is_block_closed(self): return _llvm_wrapper.Builder_is_block_closed(self)
     __swig_destroy__ = _llvm_wrapper.delete_Builder
     __del__ = lambda self : None;

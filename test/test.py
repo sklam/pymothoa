@@ -18,6 +18,8 @@ def test_constant():
     C = A * B
     return C
 
+test_constant_py = test_constant.run_jit
+
 @function(ret=Int, args=[Int])
 def test_arg(B):
     var (
@@ -28,9 +30,14 @@ def test_arg(B):
     C = A / B
     return C
 
+test_arg_py = test_arg.run_py
+
 @function(ret=Int, args=[Int])
 def test_call(a):
     return test_arg(a)
+
+def test_call_py(a):
+    return test_arg_py(a)
 
 @function(ret=Int, args=[Int])
 def test_recur(a):
@@ -39,12 +46,24 @@ def test_recur(a):
     else:
         return a + test_recur(a-1)
 
+def test_recur_py(a):
+    if a <= 1:
+        return 1
+    else:
+        return a + test_recur_py(a-1)
+
 @function(ret=Int64, args=[Int64])
 def test_recur64(a):
     if a <= 1:
         return 1
     else:
         return a + test_recur64(a-1)
+
+def test_recur64_py(a):
+    if a <= 1:
+        return 1
+    else:
+        return a + test_recur64_py(a-1)
 
 @function(ret=Float, args=[Float])
 def test_float(a):
@@ -53,6 +72,12 @@ def test_float(a):
     else:
         return a + test_float(a/1.1)
 
+def test_float_py(a):
+    if a <= 1:
+        return 1.0
+    else:
+        return a + test_float_py(a/1.1)
+
 @function(ret=Double, args=[Double])
 def test_double(a):
     if a <= 1:
@@ -60,13 +85,19 @@ def test_double(a):
     else:
         return a + test_double(a/1.1)
 
+def test_double_py(a):
+    if a <= 1:
+        return 1.0
+    else:
+        return a + test_double_py(a/1.1)
+
 @function(ret=Int, args=[Int, Int])
 def test_forloop(val, repeat):
     for i in xrange(3, repeat):
         val = val + i
     return val
 
-
+test_forloop_py = test_forloop.run_jit
 # -------------------------------------------------------------------
 
 import unittest
@@ -77,18 +108,18 @@ from _util import benchmark, relative_error, benchmark_summary
 
 class Test(unittest.TestCase):
     def setUp(self):
-        self.REP = 512
+        self.REP = 1000
 
     def test_constant(self):
 
         with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
             with timer_py:
                 for _ in xrange(self.REP):
-                    py_result = test_constant()
+                    py_result = test_constant_py()
 
             with timer_jit:
                 for _ in xrange(self.REP):
-                    jit_result = test_constant.jit()
+                    jit_result = test_constant()
 
         self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
 
@@ -97,11 +128,11 @@ class Test(unittest.TestCase):
         with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
             with timer_py:
                 for _ in xrange(self.REP):
-                    py_result = test_arg(ARG)
+                    py_result = test_arg_py(ARG)
 
             with timer_jit:
                 for _ in xrange(self.REP):
-                    jit_result = test_arg.jit(ARG)
+                    jit_result = test_arg(ARG)
 
         self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
 
@@ -111,11 +142,11 @@ class Test(unittest.TestCase):
         with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
             with timer_py:
                 for _ in xrange(self.REP):
-                    py_result = test_call(ARG)
+                    py_result = test_call_py(ARG)
 
             with timer_jit:
                 for _ in xrange(self.REP):
-                    jit_result = test_call.jit(ARG)
+                    jit_result = test_call(ARG)
 
         self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
 
@@ -124,11 +155,11 @@ class Test(unittest.TestCase):
         with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
             with timer_py:
                 for _ in xrange(self.REP):
-                    py_result = test_recur(ARG)
+                    py_result = test_recur_py(ARG)
 
             with timer_jit:
                 for _ in xrange(self.REP):
-                    jit_result = test_recur.jit(ARG)
+                    jit_result = test_recur(ARG)
 
         self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
 
@@ -138,11 +169,11 @@ class Test(unittest.TestCase):
         with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
             with timer_py:
                 for _ in xrange(self.REP):
-                    py_result = test_recur64(ARG)
+                    py_result = test_recur64_py(ARG)
 
             with timer_jit:
                 for _ in xrange(self.REP):
-                    jit_result = test_recur64.jit(ARG)
+                    jit_result = test_recur64(ARG)
 
         self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
 
@@ -151,11 +182,11 @@ class Test(unittest.TestCase):
         with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
             with timer_py:
                 for _ in xrange(self.REP):
-                    py_result = test_float(ARG)
+                    py_result = test_float_py(ARG)
 
             with timer_jit:
                 for _ in xrange(self.REP):
-                    jit_result = test_float.jit(ARG)
+                    jit_result = test_float(ARG)
 
         self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
 
@@ -164,11 +195,11 @@ class Test(unittest.TestCase):
         with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
             with timer_py:
                 for _ in xrange(self.REP):
-                    py_result = test_double(ARG)
+                    py_result = test_double_py(ARG)
 
             with timer_jit:
                 for _ in xrange(self.REP):
-                    jit_result = test_double.jit(ARG)
+                    jit_result = test_double(ARG)
 
         self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
 
@@ -177,11 +208,11 @@ class Test(unittest.TestCase):
         with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
             with timer_py:
                 for _ in xrange(self.REP):
-                    py_result = test_forloop(*ARG)
+                    py_result = test_forloop_py(*ARG)
 
             with timer_jit:
                 for _ in xrange(self.REP):
-                    jit_result = test_forloop.jit(*ARG)
+                    jit_result = test_forloop(*ARG)
 
         self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
 

@@ -6,19 +6,17 @@ reassociate
 gvn
 simplifycfg
 memdep
-indvars
 lda
-memdep
-#licm # causing  Assertion `LoopToAliasSetMap.empty() && "Didn't free loop alias sets"'
-lcssa
-loops
-loop-simplify
-loop-rotate
+licm
 loop-unswitch
-loop-unroll
-memdep
 loop-simplify
-scalar-evolution
+lcssa
+indvars
+loop-idiom
+loop-deletion
+loop-unroll
+loop-simplify
+simplifycfg
 memdep
 bb-vectorize
 instcombine

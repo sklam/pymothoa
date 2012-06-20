@@ -25,7 +25,6 @@ class LLVMCodeGenerator(ast.NodeVisitor):
         self.symbols = symbols.copy()
 
     def visit_FunctionDef(self, node):
-
         retty = self.retty.type()
         argtys = map(lambda X: X.type(), self.argtys)
 
@@ -86,7 +85,19 @@ class LLVMCodeGenerator(ast.NodeVisitor):
                 return
             else:
                 assert False
+        elif fn is types.Vector:
+            assert not node.keywords
+            assert not node.starargs
+            assert not node.kwargs
+            ty = self.visit(node.args[0])
+            ct = self.get_constant(node.args[1])
 
+            newclsname = '__CustomVector__%s%d'%(ty.__name__, ct)
+            newcls = type(newclsname, (types.GenericVector,), {
+                'elemtype': ty,
+                'elemcount': ct,
+            })
+            return newcls
         elif isinstance(fn, LLVMFunction):
             assert not node.keywords
             assert not node.starargs
@@ -114,7 +125,12 @@ class LLVMCodeGenerator(ast.NodeVisitor):
                     return self.function
                 raise UndefinedSymbolError(node)
             else: # load from stack
-                return val
+                if type(val) is int:
+                    return LLVMConstant(LLVMType(types.Int), val)
+                elif type(val) is float:
+                    return LLVMConstant(LLVMType(types.Double), val)
+                else:
+                    return val
         else:
             assert isinstance(node.ctx, ast.Store)
             try:
@@ -266,14 +282,27 @@ class LLVMCodeGenerator(ast.NodeVisitor):
         assert isinstance(node.slice, ast.Index)
         ptr = self.visit(node.value)
         idx = self.visit(node.slice.value)
-        ptr_val = ptr.value(self.builder)
-        idx_val = idx.value(self.builder)
-        ptr_offset = self.builder.gep(ptr_val, idx_val)
-        if isinstance(node.ctx, ast.Store):
-            return LLVMTempPointer(ptr_offset, ptr.type.elemtype)
+        if isinstance(ptr.type, LLVMVector):
+            if isinstance(node.ctx, ast.Load):
+                elemval = self.builder.extract_element(ptr.value(self.builder), idx.value(self.builder))
+                return LLVMTempValue(elemval, ptr.type.elemtype)
+            else:
+                assert isinstance(node.ctx, ast.Store)
+                zero = LLVMConstant(LLVMType(types.Int), 0)
+                indices = map(lambda X: X.value(self.builder), [zero, idx])
+                addr = self.builder.gep2(ptr.pointer, indices)
+                return LLVMTempPointer(addr, ptr.type.elemtype)
+                #elemval = self.builder.insert_element(ptr.value(self.builder)
         else:
-            assert isinstance(node.ctx, ast.Load)
-            return LLVMTempValue(self.builder.load(ptr_offset), ptr.type.elemtype)
+            assert isinstance(ptr.type, LLVMUnboundedArray)
+            ptr_val = ptr.value(self.builder)
+            idx_val = idx.value(self.builder)
+            ptr_offset = self.builder.gep(ptr_val, idx_val)
+            if isinstance(node.ctx, ast.Store):
+                return LLVMTempPointer(ptr_offset, ptr.type.elemtype)
+            else:
+                assert isinstance(node.ctx, ast.Load)
+                return LLVMTempValue(self.builder.load(ptr_offset), ptr.type.elemtype)
 
     def visit_Num(self, node):
         if type(node.n) is int:
@@ -311,4 +340,14 @@ class LLVMCodeGenerator(ast.NodeVisitor):
     def new_basic_block(self, name='uname'):
         self.__blockcounter += 1
         return self.function.append_basic_block('%s_%d'%(name, self.__blockcounter))
+
+    def get_constant(self, node):
+        if isinstance(node, ast.Num):
+            return node.n
+        else:
+            if not isinstance(node, ast.Name):
+                raise NotImplementedError
+            if not isinstance(node.ctx, ast.Load):
+                raise NotImplementedError
+            return self.symbols[node.id]
 

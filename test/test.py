@@ -112,12 +112,12 @@ class Test(unittest.TestCase):
 
     def test_constant(self):
 
-        with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
-            with timer_py:
+        with benchmark() as bm:
+            with bm.entry('Python'):
                 for _ in xrange(self.REP):
                     py_result = test_constant_py()
 
-            with timer_jit:
+            with bm.entry('JIT'):
                 for _ in xrange(self.REP):
                     jit_result = test_constant()
 
@@ -125,12 +125,12 @@ class Test(unittest.TestCase):
 
     def test_arg(self):
         ARG = randint(1,0xffffffff)
-        with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
-            with timer_py:
+        with benchmark() as bm:
+            with bm.entry('Python'):
                 for _ in xrange(self.REP):
                     py_result = test_arg_py(ARG)
 
-            with timer_jit:
+            with bm.entry('JIT'):
                 for _ in xrange(self.REP):
                     jit_result = test_arg(ARG)
 
@@ -139,12 +139,11 @@ class Test(unittest.TestCase):
 
     def test_call(self):
         ARG = randint(1,0xffffffff)
-        with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
-            with timer_py:
-                for _ in xrange(self.REP):
+        with benchmark() as bm:
+            with bm.entry('Python'):
                     py_result = test_call_py(ARG)
 
-            with timer_jit:
+            with bm.entry('JIT'):
                 for _ in xrange(self.REP):
                     jit_result = test_call(ARG)
 
@@ -152,12 +151,12 @@ class Test(unittest.TestCase):
 
     def test_recur(self):
         ARG = randint(1,100)
-        with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
-            with timer_py:
+        with benchmark() as bm:
+            with bm.entry('Python'):
                 for _ in xrange(self.REP):
                     py_result = test_recur_py(ARG)
 
-            with timer_jit:
+            with bm.entry('JIT'):
                 for _ in xrange(self.REP):
                     jit_result = test_recur(ARG)
 
@@ -166,12 +165,12 @@ class Test(unittest.TestCase):
 
     def test_recur64(self):
         ARG = randint(1,100)
-        with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
-            with timer_py:
+        with benchmark() as bm:
+            with bm.entry('Python'):
                 for _ in xrange(self.REP):
                     py_result = test_recur64_py(ARG)
 
-            with timer_jit:
+            with bm.entry('JIT'):
                 for _ in xrange(self.REP):
                     jit_result = test_recur64(ARG)
 
@@ -179,12 +178,12 @@ class Test(unittest.TestCase):
 
     def test_float(self):
         ARG = 321.321e+2
-        with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
-            with timer_py:
+        with benchmark() as bm:
+            with bm.entry('Python'):
                 for _ in xrange(self.REP):
                     py_result = test_float_py(ARG)
 
-            with timer_jit:
+            with bm.entry('JIT'):
                 for _ in xrange(self.REP):
                     jit_result = test_float(ARG)
 
@@ -192,12 +191,12 @@ class Test(unittest.TestCase):
 
     def test_double(self):
         ARG = 321.321e+4
-        with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
-            with timer_py:
+        with benchmark() as bm:
+            with bm.entry('Python'):
                 for _ in xrange(self.REP):
                     py_result = test_double_py(ARG)
 
-            with timer_jit:
+            with bm.entry('JIT'):
                 for _ in xrange(self.REP):
                     jit_result = test_double(ARG)
 
@@ -205,12 +204,12 @@ class Test(unittest.TestCase):
 
     def test_forloop(self):
         ARG = 1, 2**10
-        with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
-            with timer_py:
+        with benchmark() as bm:
+            with bm.entry('Python'):
                 for _ in xrange(self.REP):
                     py_result = test_forloop_py(*ARG)
 
-            with timer_jit:
+            with bm.entry('JIT'):
                 for _ in xrange(self.REP):
                     jit_result = test_forloop(*ARG)
 

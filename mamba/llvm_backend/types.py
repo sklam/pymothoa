@@ -32,7 +32,10 @@ class LLVMType(object):
 
                 # determine mixin classes to install
                 if isinstance(elemtype, LLVMBasicFloatMixin):
-                    mixins = (LLVMBasicFloatMixin ,)
+                    if isinstance(elemtype, LLVMBasicDoubleMixin):
+                        mixins = (LLVMBasicFloatMixin ,)
+                    else:
+                        mixins = (LLVMBasicDoubleMixin ,)
                 elif isinstance(elemtype, LLVMBasicIntMixin):
                     mixins = (LLVMBasicIntMixin ,)
                 else:

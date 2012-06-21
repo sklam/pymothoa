@@ -1,5 +1,3 @@
-
-
 class CompilerError(Exception):
     message = 'Unspecified compiler error.'
     def __init__(self, node_or_error, additional=None):
@@ -27,4 +25,5 @@ Hint: Mamba requires all variables to be defined using var ( Name = Type, ... ) 
 class MissingReturnError(CompilerError):
     message = 'Function missing return statement.'
 
-
+class InternalError(CompilerError):
+    message = 'Internal error of the compiler. Can be unimplemented features.'

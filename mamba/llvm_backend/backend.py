@@ -1,13 +1,17 @@
+import logging
 import ast
 
-from mamba.util.descriptor import Descriptor, instanceof
 
+from mamba.util.descriptor import Descriptor, instanceof
 from mamba import dialect
 from mamba.compiler_errors import *
 
 from types import *
 from values import *
+
 import llvm # binding
+
+logger = logging.getLogger(__name__)
 
 class LLVMCodeGenerator(ast.NodeVisitor):
     jit_engine    = Descriptor(constant=True)
@@ -237,7 +241,6 @@ class LLVMCodeGenerator(ast.NodeVisitor):
         # exit
         self.builder.insert_at(bb_exit)
 
-
     def visit_Compare(self, node):
         assert len(node.ops)==1
         assert len(node.comparators)==1
@@ -313,12 +316,16 @@ class LLVMCodeGenerator(ast.NodeVisitor):
     def visit(self, node):
         try:
             fn = getattr(self, 'visit_%s' % type(node).__name__)
-        except AttributeError:
-            logger.debug('Unhandled visit to %s', ast.dump(node))
-            raise
-            # return super(LLVMCodeGenerator, self).visit(node)
+        except AttributeError as e:
+            logger.exception(e)
+            logger.error('Unhandled visit to %s', ast.dump(node))
+            raise InternalError()
         else:
-            return fn(node)
+            try:
+                return fn(node)
+            except (NotImplementedError, AssertionError) as e:
+                logger.exception(e)
+                raise InternalError(node)
 
     def declare(self, name, ty):
         realty = LLVMType(ty)

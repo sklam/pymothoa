@@ -2,6 +2,8 @@ from time import time
 import inspect
 from contextlib import contextmanager
 
+BENCHMARK_SUMMARY = []
+
 class Timer:
     def start(self):
         self._start = time()
@@ -18,10 +20,60 @@ class Timer:
     def __exit__(self, *args, **kwargs):
         self.stop()
 
-@contextmanager
-def benchmark(name1, name2):
-    CALLER = inspect.currentframe().f_back.f_back.f_code
 
+def benchmark_summary():
+    print
+    print 'Benchmark Summary'.center(80, '=')
+    for bm in BENCHMARK_SUMMARY:
+        print
+        print bm.name
+        fastest_dt = None
+        for entry, timer in bm.entries.items():
+            dt = timer.duration()
+            print '\t-', entry, '%.2gs'%dt
+            if fastest_dt is None or dt < fastest_dt:
+                fastest_dt = dt
+                fastest_entry = entry
+        print '\tFastest entry is', fastest_entry
+        for entry, timer in bm.entries.items():
+            if entry != fastest_entry:
+                dt = timer.duration()
+                speedup = dt / fastest_dt
+                print '\t%.2fx speedup over %s'%(speedup, entry)
+
+    print '='*80
+    print
+
+def relative_error(expect, got):
+    expect = float(expect)
+    got = float(got)
+    return abs(got-expect)/expect
+
+class Benchmark:
+    def __init__(self, name):
+        self.name = name
+        self.entries = {}
+
+    @contextmanager
+    def entry(self, name):
+        if name in self.entries:
+            raise NameError(name, 'repeated')
+        else:
+            timer = self.entries[name] = Timer()
+            timer.start()
+            yield timer
+            timer.stop()
+
+
+@contextmanager
+def benchmark():
+    CALLER = inspect.currentframe().f_back.f_back.f_code
+    name = '%s:%d'%(CALLER.co_name, CALLER.co_firstlineno)
+    bm = Benchmark(name)
+    yield bm
+    BENCHMARK_SUMMARY.append(bm)
+
+    '''
     t1 = Timer()
     t2 = Timer()
     yield t1, t2
@@ -38,56 +90,4 @@ def benchmark(name1, name2):
         msg = template % (name2, dt1/dt2)
 
     BENCHMARK_SUMMARY.append(msg)
-
-BENCHMARK_SUMMARY = []
-
-def benchmark_summary():
-    print
-    print 'Benchmark Summary'.center(80, '=')
-    for m in BENCHMARK_SUMMARY:
-        print m
-    print '='*80
-
-def relative_error(expect, got):
-    expect = float(expect)
-    got = float(got)
-    return abs(got-expect)/expect
-
-def test_and_compare(fn, *args):
-    R = 200
-
-    ret_llvm = fn.jit(*args)
-    s = time()
-    for i in xrange(R):
-        ret_llvm = fn.jit(*args)
-    e = time()
-    print 'llvm: ', ret_llvm
-
-    t_llvm = e-s
-
-
-    s = time()
-    for i in xrange(R):
-        ret_python = fn(*args)
-    e = time()
-    print 'python:', ret_python
-
-    t_python = e-s
-
-    relative_error = float(abs(ret_llvm-ret_python))/ret_python
-
-    if relative_error > 1e-5:
-        print 'relative_error =', relative_error
-        raise ValueError('Computation error!')
-
-    if t_llvm < t_python:
-        print 'LLVM is faster by %f seconds (%.1fx)'%(
-            t_python-t_llvm,
-            t_python/t_llvm,
-            )
-    elif t_python < t_llvm:
-        print 'Python is faster by %f seconds (%.2fx)'%(
-            t_llvm-t_python,
-            -t_llvm/t_python,
-            )
-
+    '''

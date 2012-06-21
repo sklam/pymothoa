@@ -47,24 +47,24 @@ class Test(unittest.TestCase):
         self.REP = 512
 
     def test_array(self):
-        with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
-            with timer_py:
+        with benchmark() as bm:
+            with bm.entry('Python'):
                 for _ in xrange(self.REP):
                     py_result = test_array_py(self.A, self.N)
 
-            with timer_jit:
+            with bm.entry('JIT'):
                 for _ in xrange(self.REP):
                     jit_result = test_array(self.A, self.N)
 
         self.assertTrue(relative_error(py_result, jit_result) < 0.01/100)
 
     def test_array2(self):
-        with benchmark('Python', 'LLVM') as (timer_py, timer_jit):
-            with timer_py:
+        with benchmark() as bm:
+            with bm.entry('Python'):
                 for _ in xrange(self.REP):
                     py_result = test_array_py(self.A, self.N)
 
-            with timer_jit:
+            with bm.entry('JIT'):
                 for _ in xrange(self.REP):
                     jit_result = test_array(self.A, self.N)
 

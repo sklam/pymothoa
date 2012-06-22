@@ -1,9 +1,9 @@
 import logging
 #logging.basicConfig(level=logging.DEBUG)
 
-from mamba.compiler import function
-from mamba.types import *
-from mamba.dialect import *
+from pymothoa.compiler import function
+from pymothoa.types import *
+from pymothoa.dialect import *
 
 @function(ret=Float, args=[ [Float], Int])
 def test_array(A, N):

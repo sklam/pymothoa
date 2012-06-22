@@ -1,4 +1,4 @@
-from mamba.llvm_backend.module import LLVMModuleManager
+from pymothoa.llvm_backend.module import LLVMModuleManager
 
 USE_THESE_PASSES = '''
 targetlibinfo

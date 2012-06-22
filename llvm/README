@@ -1,5 +1,5 @@
 == Brief ==
-This directory contains an implementation of LLVM-Python binding using SWIG for generating the "glue". The binding only extracts the minimum amount of features or the LLVM to support PyMamba.
+This directory contains an implementation of LLVM-Python binding using SWIG for generating the "glue". The binding only extracts the minimum amount of features or the LLVM to support PyMothoa.
 
 == Build ==
 To build, run `make all` on this directory. This invokes scripts to generate the SWIG "glue" from the llvm_wrapper.hpp. Re-build everytime the llvm_wrapper.hpp is changed.

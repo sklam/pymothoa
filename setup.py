@@ -31,7 +31,7 @@ def create_llvm_wrapper():
     INC = ['llvm']+llvm_config_filter('--cxxflags', '-I', strip=True)
     SRC = list_file_with_extension('llvm/src', '.cpp') + list_file_with_extension('llvm', '.cxx')
 
-    return Extension('mamba.llvm_backend.llvm._llvm_wrapper',
+    return Extension('pymothoa.llvm_backend.llvm._llvm_wrapper',
             #extra_compile_args=llvm_config_filter('--cxxflags', '-f'),
             define_macros = llvm_config_macros(),
             include_dirs = INC,
@@ -43,15 +43,15 @@ def create_llvm_wrapper():
 
 ext_llvm_wrapper = create_llvm_wrapper()
 
-setup (name = 'PyMamba',
+setup (name = 'Pymothoa',
        version = '0.1',
        description = 'A python dialect for enabling fast JIT execution.',
        author = 'Siu Kwan Lam',
 
-       package_dir={'mamba.llvm_backend.llvm': 'llvm'},
-       packages = ['mamba', 'mamba.llvm_backend', 'mamba.util'],
+       package_dir={'pymothoa.llvm_backend.llvm': 'llvm'},
+       packages = ['pymothoa', 'pymothoa.llvm_backend', 'pymothoa.util'],
 
-       py_modules = ['mamba.llvm_backend.llvm.llvm_wrapper'],
+       py_modules = ['pymothoa.llvm_backend.llvm.llvm_wrapper'],
 
        ext_modules = [ext_llvm_wrapper])
 

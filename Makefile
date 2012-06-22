@@ -4,5 +4,5 @@ deploy:
 
 uninstall:
 	rm -rf build
-	rm -rf ~/.local/lib/python2.6/site-packages/mamba
-	rm -rf ~/.local/lib/python2.6/site-packages/PyMamba-*.egg-info
+	rm -rf ~/.local/lib/python2.6/site-packages/pymothoa
+	rm -rf ~/.local/lib/python2.6/site-packages/Pymothoa-*.egg-info

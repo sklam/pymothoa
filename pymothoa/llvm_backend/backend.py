@@ -2,9 +2,10 @@ import logging
 import ast
 
 
-from mamba.util.descriptor import Descriptor, instanceof
-from mamba import dialect
-from mamba.compiler_errors import *
+from pymothoa.util.descriptor import Descriptor, instanceof
+from pymothoa import dialect
+from pymothoa.compiler_errors import *
+from pymothoa.backend import CodeGenerationBase
 
 from types import *
 from values import *
@@ -13,7 +14,7 @@ import llvm # binding
 
 logger = logging.getLogger(__name__)
 
-class LLVMCodeGenerator(ast.NodeVisitor):
+class LLVMCodeGenerator(CodeGenerationBase):
     jit_engine    = Descriptor(constant=True)
     retty         = Descriptor(constant=True)
     argtys        = Descriptor(constant=True)
@@ -312,20 +313,6 @@ class LLVMCodeGenerator(ast.NodeVisitor):
             return LLVMConstant(LLVMType(types.Int), node.n)
         elif type(node.n) is float:
             return LLVMConstant(LLVMType(types.Double), node.n)
-
-    def visit(self, node):
-        try:
-            fn = getattr(self, 'visit_%s' % type(node).__name__)
-        except AttributeError as e:
-            logger.exception(e)
-            logger.error('Unhandled visit to %s', ast.dump(node))
-            raise InternalError()
-        else:
-            try:
-                return fn(node)
-            except (NotImplementedError, AssertionError) as e:
-                logger.exception(e)
-                raise InternalError(node)
 
     def declare(self, name, ty):
         realty = LLVMType(ty)

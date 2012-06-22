@@ -1,8 +1,8 @@
 import ctypes
 
-from mamba.util.descriptor import Descriptor, instanceof
+from pymothoa.util.descriptor import Descriptor, instanceof
 
-from mamba import types
+from pymothoa import types
 import llvm # binding
 
 

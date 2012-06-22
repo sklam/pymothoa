@@ -1,4 +1,4 @@
-from mamba.util.descriptor import Descriptor, instanceof
+from pymothoa.util.descriptor import Descriptor, instanceof
 
 import llvm # binding
 

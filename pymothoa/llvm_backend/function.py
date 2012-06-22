@@ -1,7 +1,7 @@
 import logging
 import ast, inspect
 
-from mamba.util.descriptor import Descriptor, instanceof
+from pymothoa.util.descriptor import Descriptor, instanceof
 
 from module import LLVMModuleManager
 from backend import LLVMCodeGenerator
@@ -27,8 +27,8 @@ class LLVMFunction(object):
         self.argtys = map(lambda X: LLVMType(X), argtys)
 
     def compile(self):
-        from mamba.compiler_errors import CompilerError
-        from mamba.util import terminal_helpers as term
+        from pymothoa.compiler_errors import CompilerError
+        from pymothoa.util import terminal_helpers as term
 
         func = self.code_python
         source = inspect.getsource(func)

@@ -12,7 +12,7 @@ from pymothoa.dialect import *
 def test_no_ret():
     pass
 
-class TestErrors(unittest.TestCase):
+class Test(unittest.TestCase):
     def test_no_return_error(self):
         with self.assertRaises(CompilerError) as handle:
             test_no_ret.compile()

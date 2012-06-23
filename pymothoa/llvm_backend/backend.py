@@ -113,7 +113,6 @@ class LLVMCodeGenerator(CodeGenerationBase):
             assert not node.starargs
             assert not node.kwargs
             args = map(self.visit, node.args)
-            print fn
             return self.call_function(fn.code_llvm, args, fn.retty, fn.argtys)
         elif fn is self.function:
             assert not node.keywords

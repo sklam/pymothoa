@@ -104,7 +104,7 @@ class Test(unittest.TestCase):
         self.N = VW*512
         self.Af = array(map(lambda _: random()+1, xrange(self.N)), dtype=c_float)
         self.Ad = array(map(lambda _: random()+1, xrange(self.N)), dtype=c_double)
-        self.Ai = array(map(lambda _: randint(1, 0xffff), xrange(self.N)), dtype=c_int)
+        self.Ai = array(map(lambda _: randint(-10, 10), xrange(self.N)), dtype=c_int)
         self.REP = 100
 
     def test_vector_float(self):
@@ -143,8 +143,9 @@ class Test(unittest.TestCase):
                 for _ in xrange(self.REP):
                     jit_result = test_vector_int(self.Ai, self.N)
 
+            error = relative_error(py_result, jit_result)
             print py_result, jit_result
-        self.assertTrue(relative_error(py_result, jit_result) < 0.01/100)
+        self.assertTrue(error < 0.01/100)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Test)
@@ -156,6 +157,3 @@ if __name__ == '__main__':
         print 'End Assembly'.center(80, '=')
 
     benchmark_summary()
-
-
-

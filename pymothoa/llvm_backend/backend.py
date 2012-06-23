@@ -1,6 +1,6 @@
 import logging
 import ast
-
+from contextlib import contextmanager
 
 from pymothoa.util.descriptor import Descriptor, instanceof
 from pymothoa import dialect
@@ -27,6 +27,7 @@ class LLVMCodeGenerator(CodeGenerationBase):
         self.retty = retty
         self.argtys = argtys
 
+    @contextmanager
     def generate_function(self, name):
         retty = self.retty.type()
         argtys = map(lambda X: X.type(), self.argtys)
@@ -56,14 +57,15 @@ class LLVMCodeGenerator(CodeGenerationBase):
         self.builder = llvm.Builder()
         self.builder.insert_at(bb_entry)
 
-        def closeup():
-            if not self.builder.is_block_closed():
-                if isinstance(self.retty, types.Void):
-                    # no return
-                    self.builder.ret_void()
-                else:
-                    raise MissingReturnError(self.current_node)
-        return closeup
+        yield # wait until args & body are generated
+
+        # close function
+        if not self.builder.is_block_closed():
+            if isinstance(self.retty, types.Void):
+                # no return
+                self.builder.ret_void()
+            else:
+                raise MissingReturnError(self.current_node)
 
     def generate_function_arguments(self, arguments):
         fn_args = self.function.arguments()
@@ -85,29 +87,6 @@ class LLVMCodeGenerator(CodeGenerationBase):
             raise InvalidCall(self.current_node)
 
         return self._call_function(fn, args, retty, argtys)
-
-
-    def visit_Name(self, node):
-        if isinstance(node.ctx, ast.Load):
-            try: # lookup in the symbol table
-                val = self.symbols[node.id]
-            except KeyError: # does not exist
-                if node.id == self.function.name():
-                    return self.function
-                raise UndefinedSymbolError(node)
-            else: # load from stack
-                if type(val) is int:
-                    return LLVMConstant(LLVMType(types.Int), val)
-                elif type(val) is float:
-                    return LLVMConstant(LLVMType(types.Double), val)
-                else:
-                    return val
-        else:
-            assert isinstance(node.ctx, ast.Store)
-            try:
-                return self.symbols[node.id]
-            except KeyError:
-                raise UndefinedSymbolError(node)
 
     def visit_If(self, node):
         test = self.visit(node.test)
@@ -227,31 +206,6 @@ class LLVMCodeGenerator(CodeGenerationBase):
         fn = getattr(ty, 'op_%s'%op_class.__name__.lower())
         return LLVMTempValue(fn(lval, rval, self.builder), ty)
 
-    def visit_Subscript(self, node):
-        assert isinstance(node.slice, ast.Index)
-        ptr = self.visit(node.value)
-        idx = self.visit(node.slice.value)
-        if isinstance(ptr.type, LLVMVector):
-            if isinstance(node.ctx, ast.Load):
-                elemval = self.builder.extract_element(ptr.value(self.builder), idx.value(self.builder))
-                return LLVMTempValue(elemval, ptr.type.elemtype)
-            else:
-                assert isinstance(node.ctx, ast.Store)
-                zero = LLVMConstant(LLVMType(types.Int), 0)
-                indices = map(lambda X: X.value(self.builder), [zero, idx])
-                addr = self.builder.gep2(ptr.pointer, indices)
-                return LLVMTempPointer(addr, ptr.type.elemtype)
-                #elemval = self.builder.insert_element(ptr.value(self.builder)
-        else:
-            assert isinstance(ptr.type, LLVMUnboundedArray)
-            ptr_val = ptr.value(self.builder)
-            idx_val = idx.value(self.builder)
-            ptr_offset = self.builder.gep(ptr_val, idx_val)
-            if isinstance(node.ctx, ast.Store):
-                return LLVMTempPointer(ptr_offset, ptr.type.elemtype)
-            else:
-                assert isinstance(node.ctx, ast.Load)
-                return LLVMTempValue(self.builder.load(ptr_offset), ptr.type.elemtype)
 
     def generate_constant_int(self, value):
         return LLVMConstant(LLVMType(types.Int), value)
@@ -275,3 +229,28 @@ class LLVMCodeGenerator(CodeGenerationBase):
     def new_basic_block(self, name='uname'):
         self.__blockcounter += 1
         return self.function.append_basic_block('%s_%d'%(name, self.__blockcounter))
+
+    def generate_vector_load_elem(self, ptr, idx):
+        elemval = self.builder.extract_element(
+                    ptr.value(self.builder),
+                    idx.value(self.builder),
+                  )
+        return LLVMTempValue(elemval, ptr.type.elemtype)
+
+    def generate_vector_store_elem(self, ptr, idx):
+        zero = LLVMConstant(LLVMType(types.Int), 0)
+        indices = map(lambda X: X.value(self.builder), [zero, idx])
+        addr = self.builder.gep2(ptr.pointer, indices)
+        return LLVMTempPointer(addr, ptr.type.elemtype)
+
+    def generate_array_load_elem(self, ptr, idx):
+        ptr_val = ptr.value(self.builder)
+        idx_val = idx.value(self.builder)
+        ptr_offset = self.builder.gep(ptr_val, idx_val)
+        return LLVMTempValue(self.builder.load(ptr_offset), ptr.type.elemtype)
+
+    def generate_array_store_elem(self, ptr, idx):
+        ptr_val = ptr.value(self.builder)
+        idx_val = idx.value(self.builder)
+        ptr_offset = self.builder.gep(ptr_val, idx_val)
+        return LLVMTempPointer(ptr_offset, ptr.type.elemtype)

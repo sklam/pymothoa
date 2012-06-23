@@ -43,14 +43,14 @@ class CodeGenerationBase(ast.NodeVisitor):
 
     def visit_FunctionDef(self, node):
         # function def
-        close = self.generate_function(node.name) # generate header
-        # arguments
-        self.visit(node.args)
-        # function body
-        for stmt in node.body:
-            self.visit(stmt)
-        else:
-            close() # close function
+        with self.generate_function(node.name) as fndef:
+            # arguments
+            self.visit(node.args)
+            # function body
+            for stmt in node.body:
+                self.visit(stmt)
+        # close function
+
 
     def visit_arguments(self, node):
         if node.vararg or node.kwarg or node.defaults:
@@ -224,3 +224,56 @@ This error should have been caught by the Python parser.''')
 
     def generate_constant_real(self, val):
         raise NotImplementedError
+
+    def visit_Subscript(self, node):
+        assert isinstance(node.slice, ast.Index)
+        ptr = self.visit(node.value)
+        idx = self.visit(node.slice.value)
+        if isinstance(ptr.type, types.GenericVector):
+            # Access vector element
+            if isinstance(node.ctx, ast.Load): # load
+                return self.generate_vector_load_elem(ptr, idx)
+            elif isinstance(node.ctx, ast.Store): # store
+                return self.generate_vector_store_elem(ptr, idx)
+        elif isinstance(ptr.type, types.GenericUnboundedArray):
+            # Access array element
+            if isinstance(node.ctx, ast.Load): # load
+                return self.generate_array_load_elem(ptr, idx)
+            elif isinstance(node.ctx, ast.Store): # store
+                return self.generate_array_store_elem(ptr, idx)
+        # unreachable
+        raise AssertionError('Unreachable')
+
+
+    def generate_vector_load_elem(self, ptr, idx):
+        raise NotImplementedError
+
+    def generate_vector_store_elem(self, ptr, idx):
+        raise NotImplementedError
+
+    def generate_array_load_elem(self, ptr, idx):
+        raise NotImplementedError
+
+    def generate_array_store_elem(self, ptr, idx):
+        raise NotImplementedError
+
+    def visit_Name(self, node):
+        if isinstance(node.ctx, ast.Load): # load
+            try: # lookup in the symbol table
+                val = self.symbols[node.id]
+            except KeyError: # does not exist
+                raise UndefinedSymbolError(node)
+            else: # load from stack
+                if isinstance(val, int) or isinstance(val, long):
+                    return self.generate_constant_int(val)
+                elif isinstance(val, float):
+                    return self.generate_constant_real(val)
+                else:
+                    return val
+        elif isinstance(node.ctx, ast.Store): # store
+            try:
+                return self.symbols[node.id]
+            except KeyError:
+                raise UndefinedSymbolError(node)
+        # unreachable
+        raise AssertionError('unreachable')

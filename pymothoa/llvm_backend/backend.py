@@ -28,14 +28,24 @@ class LLVMCodeGenerator(CodeGenerationBase):
         self.argtys = argtys
         # symbol table
         self.symbols = symbols.copy()
-
-    def visit_FunctionDef(self, node):
+        
+        
+    def define_function(self, name):
         retty = self.retty.type()
         argtys = map(lambda X: X.type(), self.argtys)
 
-        self.function = self.jit_engine.make_function(node.name, retty, argtys)
-        self.symbols[self.function.name] = self.function
-        assert self.function.name()==node.name, (self.function.name(), node.name)
+        namespace = self.symbols['__name__']
+        realname = '.'.join([namespace,name])
+        self.function = self.jit_engine.make_function(realname, retty, argtys)
+        self.symbols[name] = self.function
+
+        if self.function.name() != realname:
+            raise InternalError(
+                    self.current_node, 
+                    'Generated function has a different name: %s'%(
+                        self.function.name()
+                    )
+                  )
 
         # make basic block
         bb_entry = self.function.append_basic_block("entry")
@@ -44,20 +54,16 @@ class LLVMCodeGenerator(CodeGenerationBase):
         # make instruction builder
         self.builder = llvm.Builder()
         self.builder.insert_at(bb_entry)
-
-        # build arguments
-        self.visit(node.args)
-
-        # build body
-        for stmt in node.body:
-            self.visit(stmt)
-        else:
+        
+        def closeup():            
             if not self.builder.is_block_closed():
-                if isinstance(self.retty, types.Void): # no return
+                if isinstance(self.retty, types.Void): 
+                    # no return
                     self.builder.ret_void()
                 else:
-                    raise MissingReturnError(node)
-
+                    raise MissingReturnError(self.current_node)
+        return closeup
+        
     def visit_arguments(self, node):
         '''Function arguments.
         '''

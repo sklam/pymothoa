@@ -27,8 +27,8 @@ class LLVMFunction(object):
         self.argtys = map(lambda X: LLVMType(X), argtys)
 
     def compile(self):
-        from pymothoa.compiler_errors import CompilerError
-        from pymothoa.util import terminal_helpers as term
+        from pymothoa.compiler_errors import CompilerError, wrap_by_function
+        
 
         func = self.code_python
         source = inspect.getsource(func)
@@ -50,27 +50,7 @@ class LLVMFunction(object):
                         )
             codegen.visit(tree.body[0])
         except CompilerError as e:
-            # Handle error and print useful information
-            modname = func.func_globals['__name__']
-            filename = func.func_globals['__file__']
-            corrsource = inspect.getsourcelines(func)
-            corrline = corrsource[0][e.line-1].rstrip()
-            corrptr = '%s^\t(in %s:%d:%d)'%(
-                            '-'*(e.col),
-                            filename,
-                            corrsource[1]+e.line-1,
-                            e.col+1)
-            template = '\n'.join([term.header('\nWhen compiling function "%s.%s":'),
-                       term.fail('%s'),
-                       '%s'])
-            msg = template %(
-                    modname,
-                    func.func_name,
-                    corrline,
-                    corrptr,
-                )
-
-            raise CompilerError(e, msg)
+            raise wrap_by_function(e, func)
 
         self.code_llvm = codegen.function
         self.code_llvm.verify()     # verify generated code

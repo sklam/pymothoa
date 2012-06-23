@@ -2,7 +2,7 @@ import logging
 import ast, inspect
 
 from pymothoa.util.descriptor import Descriptor, instanceof
-
+from pymothoa.compiler_errors import FunctionDeclarationError
 from module import LLVMModuleManager
 from backend import LLVMCodeGenerator
 from types import *
@@ -21,14 +21,32 @@ class LLVMFunction(object):
 
     manager = LLVMModuleManager() # class member
 
-    def __init__(self, orig_func, retty, argtys):
+    @classmethod
+    def new(cls, orig_func, retty, argtys):
+        self = cls()
         self.code_python = orig_func
         self.retty = LLVMType(retty)
         self.argtys = map(lambda X: LLVMType(X), argtys)
+        return self
+
+    @classmethod
+    def new_declaration(cls, fname, retty, argtys):
+        self = cls()
+        self.retty = LLVMType(retty)
+        self.argtys = map(lambda X: LLVMType(X), argtys)
+
+        # declare
+        retty = LLVMType(retty).type()
+        argtys = map(lambda X: X.type(), map(lambda X: LLVMType(X), argtys))
+        self.code_llvm = cls.manager.jit_engine.make_function(fname, retty, argtys)
+        if not self.code_llvm.valid():
+            raise FunctionDeclarationError(cls.manager.jit_engine.last_error())
+
+        return self
 
     def compile(self):
         from pymothoa.compiler_errors import CompilerError, wrap_by_function
-        
+
 
         func = self.code_python
         source = inspect.getsource(func)
@@ -64,7 +82,6 @@ class LLVMFunction(object):
 
     def assembly(self):
         return self.manager.dump_asm(self.code_llvm)
-
 
     def run_py(self, *args):
         return self.code_python(*args)

@@ -21,20 +21,23 @@ class CompilerError(Exception):
             return self.inner.is_due_to(errcls)
         else:
             return isinstance(self, errcls)
-        
+
 class VariableRedeclarationError(CompilerError):
     message = 'Variable redeclared.'
 
+class FunctionDeclarationError(CompilerError):
+    message = 'Function declaration error.'
+
 class UndefinedSymbolError(CompilerError):
     message = '''Symbol has not been defined.
-Hint: Mamba requires all variables to be defined using var ( Name = Type, ... ) construct prior to use.'''
+Hint: All variables must be defined using var ( Name = Type, ... ) construct prior to use.'''
 
 class MissingReturnError(CompilerError):
     message = 'Function missing return statement.'
 
 class InternalError(CompilerError):
     message = 'Internal Error.'
-    
+
 def wrap_by_function(e, func):
     '''Add source information to the exception.
     '''
@@ -46,17 +49,19 @@ def wrap_by_function(e, func):
     corrsource = inspect.getsourcelines(func)
     lineno = e.line-1
     corrline = corrsource[0][lineno].rstrip()
+
     prevlineno = lineno-1
     if prevlineno >= 0:
-        prevline = corrsource[0][lineno-1].rstrip()
+        prevline = corrsource[0][prevlineno].rstrip()
     else:
         prevline = ''
+
     nextlineno = lineno+1
-    if nextlineno < corrsource[1]:
-        nextline = corrsource[0][lineno+1].rstrip()
+    if nextlineno < len(corrsource[0]):
+        nextline = corrsource[0][nextlineno].rstrip()
     else:
         nextline = ''
-        
+
     loc = '(in %s:%d:%d)' % (
                     filename,
                     corrsource[1]+e.line-1,
@@ -66,7 +71,7 @@ def wrap_by_function(e, func):
 
     template = '\n'.join([
                         term.header('\nWhen compiling function "%s.%s %s":'),
-                        '%s', 
+                        '%s',
                         term.fail('%s'),
                         '%s',
                         '%s\n'
@@ -82,4 +87,3 @@ def wrap_by_function(e, func):
             nextline,
         )
     raise CompilerError(e, msg)
-

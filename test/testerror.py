@@ -13,13 +13,11 @@ def test_no_ret():
     pass
 
 class TestErrors(unittest.TestCase):
-
     def test_no_return_error(self):
         with self.assertRaises(CompilerError) as handle:
             test_no_ret.compile()
         print handle.exception
         self.assertTrue(handle.exception.is_due_to(MissingReturnError))
-
 
 if __name__ == '__main__':
     unittest.main()

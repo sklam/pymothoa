@@ -28,8 +28,8 @@ class LLVMCodeGenerator(CodeGenerationBase):
         self.argtys = argtys
         # symbol table
         self.symbols = symbols.copy()
-        
-        
+
+
     def define_function(self, name):
         retty = self.retty.type()
         argtys = map(lambda X: X.type(), self.argtys)
@@ -37,11 +37,18 @@ class LLVMCodeGenerator(CodeGenerationBase):
         namespace = self.symbols['__name__']
         realname = '.'.join([namespace,name])
         self.function = self.jit_engine.make_function(realname, retty, argtys)
+
+        if not self.function.valid():
+            raise FunctionDeclarationError(
+                    self.current_node,
+                    self.jit_engine.last_error()
+                )
+
         self.symbols[name] = self.function
 
         if self.function.name() != realname:
             raise InternalError(
-                    self.current_node, 
+                    self.current_node,
                     'Generated function has a different name: %s'%(
                         self.function.name()
                     )
@@ -54,27 +61,19 @@ class LLVMCodeGenerator(CodeGenerationBase):
         # make instruction builder
         self.builder = llvm.Builder()
         self.builder.insert_at(bb_entry)
-        
-        def closeup():            
+
+        def closeup():
             if not self.builder.is_block_closed():
-                if isinstance(self.retty, types.Void): 
+                if isinstance(self.retty, types.Void):
                     # no return
                     self.builder.ret_void()
                 else:
                     raise MissingReturnError(self.current_node)
         return closeup
-        
-    def visit_arguments(self, node):
-        '''Function arguments.
-        '''
-        assert not node.vararg, 'Variable argument not yet supported.'
-        assert not node.kwarg, 'Does not support keyword argument'
-        assert not node.defaults, 'Does not support default argument'
 
+    def define_function_arguments(self, arguments):
         fn_args = self.function.arguments()
-        for i, arg in enumerate(node.args):
-            assert isinstance(arg.ctx, ast.Param)
-            name = arg.id
+        for i, name in enumerate(arguments):
             var = LLVMVariable(name, self.argtys[i], self.builder)
             self.builder.store(fn_args[i], var.pointer)
             self.symbols[name] = var
@@ -114,6 +113,7 @@ class LLVMCodeGenerator(CodeGenerationBase):
             assert not node.starargs
             assert not node.kwargs
             args = map(self.visit, node.args)
+            print fn
             return self.call_function(fn.code_llvm, args, fn.retty, fn.argtys)
         elif fn is self.function:
             assert not node.keywords
@@ -350,4 +350,3 @@ class LLVMCodeGenerator(CodeGenerationBase):
             if not isinstance(node.ctx, ast.Load):
                 raise NotImplementedError
             return self.symbols[node.id]
-

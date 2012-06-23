@@ -144,13 +144,13 @@ FunctionAdaptor JITEngine::make_function(const char name[], llvm::Type *result, 
 
         // If func is already defined, reject.
         if (!func->empty()){
-            last_error_ = "redefinition of function";
+            last_error_ = "Redefinition of function.";
             return 0;
         }
 
         // If argument count differs, reject.
         if (func->arg_size() != params.size()) {
-            last_error_ = "redefinition of function with difference number of args";
+            last_error_ = "Redefinition of function with a different number of args.";
             return 0;
         }
     }

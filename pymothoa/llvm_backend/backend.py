@@ -29,8 +29,7 @@ class LLVMCodeGenerator(CodeGenerationBase):
         # symbol table
         self.symbols = symbols.copy()
 
-
-    def define_function(self, name):
+    def generate_function(self, name):
         retty = self.retty.type()
         argtys = map(lambda X: X.type(), self.argtys)
 
@@ -47,12 +46,9 @@ class LLVMCodeGenerator(CodeGenerationBase):
         self.symbols[name] = self.function
 
         if self.function.name() != realname:
-            raise InternalError(
-                    self.current_node,
+            raise InternalError(self.current_node,
                     'Generated function has a different name: %s'%(
-                        self.function.name()
-                    )
-                  )
+                    self.function.name() ) )
 
         # make basic block
         bb_entry = self.function.append_basic_block("entry")
@@ -71,13 +67,27 @@ class LLVMCodeGenerator(CodeGenerationBase):
                     raise MissingReturnError(self.current_node)
         return closeup
 
-    def define_function_arguments(self, arguments):
+    def generate_function_arguments(self, arguments):
         fn_args = self.function.arguments()
         for i, name in enumerate(arguments):
             var = LLVMVariable(name, self.argtys[i], self.builder)
             self.builder.store(fn_args[i], var.pointer)
             self.symbols[name] = var
 
+    def generate_call(self, fn, args):
+        from function import LLVMFunction
+        if isinstance(fn, LLVMFunction): # another function
+            retty = fn.retty
+            argtys = fn.argtys
+            fn = fn.code_llvm
+        elif fn is self.function: # recursion
+            retty = self.retty
+            argtys = self.argtys
+        else:
+            raise InvalidCall(self.current_node)
+
+        return self._call_function(fn, args, retty, argtys)
+    '''
     def visit_Call(self, node):
         from function import LLVMFunction
         fn = self.visit(node.func)
@@ -89,7 +99,7 @@ class LLVMCodeGenerator(CodeGenerationBase):
                     ty = self.visit(kw.value)
                     name = kw.arg
                     try:
-                        self.declare(name, ty)
+                        self.generate_declare(name, ty)
                     except KeyError:
                         raise VariableRedeclarationError(kw.value)
                 return
@@ -122,6 +132,7 @@ class LLVMCodeGenerator(CodeGenerationBase):
             return self.call_function(fn, args, self.retty, self.argtys)
 
         assert False, fn
+    '''
 
     def visit_Expr(self, node):
         self.generic_visit(node)
@@ -199,7 +210,7 @@ class LLVMCodeGenerator(CodeGenerationBase):
         assert len(iternode.args) in [1,2]
 
         try:
-            counter_ptr = self.declare(node.target.id, types.Int)
+            counter_ptr = self.generate_declare(node.target.id, types.Int)
         except KeyError:
             raise VariableRedeclarationError(node.target)
 
@@ -319,7 +330,7 @@ class LLVMCodeGenerator(CodeGenerationBase):
         elif type(node.n) is float:
             return LLVMConstant(LLVMType(types.Double), node.n)
 
-    def declare(self, name, ty):
+    def generate_declare(self, name, ty):
         realty = LLVMType(ty)
         if name in self.symbols:
             raise KeyError(name)
@@ -327,7 +338,7 @@ class LLVMCodeGenerator(CodeGenerationBase):
         self.symbols[name] = var = LLVMVariable(name, realty, self.builder)
         return var
 
-    def call_function(self, fn, args, retty, argtys):
+    def _call_function(self, fn, args, retty, argtys):
         arg_values = map(lambda X: LLVMTempValue(X.value(self.builder), X.type), args)
         # cast types
         for i, argty in enumerate(argtys):

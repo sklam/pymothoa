@@ -25,12 +25,18 @@ class CompilerError(Exception):
 class VariableRedeclarationError(CompilerError):
     message = 'Variable redeclared.'
 
+class InvalidCall(CompilerError):
+    message = 'Invalid call to non-function object.'
+
 class FunctionDeclarationError(CompilerError):
     message = 'Function declaration error.'
 
 class UndefinedSymbolError(CompilerError):
     message = '''Symbol has not been defined.
 Hint: All variables must be defined using var ( Name = Type, ... ) construct prior to use.'''
+
+class InvalidUseOfConstruct(CompilerError):
+    message = 'Invalid use of construct.'
 
 class MissingReturnError(CompilerError):
     message = 'Function missing return statement.'

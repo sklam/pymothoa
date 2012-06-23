@@ -2,15 +2,22 @@ import logging
 import ast
 
 import types, dialect
+
+from pymothoa.util.descriptor import Descriptor, instanceof
 from compiler_errors import CompilerError, InternalError
 
 logger = logging.getLogger(__name__)
 
 class CodeGenerationBase(ast.NodeVisitor):
 
-    __slots__ = '__nodes'
+    symbols = Descriptor(constant=True, constrains=instanceof(dict))
+    __nodes = Descriptor(constant=True)
 
-    def __init__(self):
+    def __init__(self, globalsymbols):
+        '''
+        globalsymbols -- A dict containing global symbols for the function.
+        '''
+        self.symbols = globalsymbols.copy()
         self.__nodes = []
 
     @property
@@ -97,7 +104,7 @@ This error should have been caught by the Python parser.''')
                         )
 
             elemty = self.visit(node.args[0])
-            elemct = self.get_constant(node.args[1])
+            elemct = self.constant_number(node.args[1])
 
             newclsname = '__CustomVector__%s%d'%(elemty.__name__, elemct)
             newcls = type(newclsname, (types.GenericVector,), {
@@ -132,8 +139,88 @@ This error should have been caught by the Python parser.''')
         for kw in node.keywords:
             ty = self.visit(kw.value) # type
             name = kw.arg             # name
-            try:
-                self.generate_declare(name, ty)
-            except KeyError:
+            if name in self.symbols:
                 raise VariableRedeclarationError(kw.value)
+
+            # store new variable to symbol table
+            self.symbols[name] = self.generate_declare(name, ty)
         return # return None
+
+    def visit_Expr(self, node):
+        self.generic_visit(node)
+
+    def visit_Attribute(self, node):
+        if isinstance(node.ctx, ast.Load):
+            value = self.visit(node.value)
+            return getattr(value, node.attr)
+        else:
+            raise NotImplementedError('Storing into attribute is not supported.')
+
+    def visit_Compare(self, node):
+        if len(node.ops)!=1:
+            raise NotImplementedError('Multiple operators in ast.Compare')
+
+        if len(node.comparators)!=1:
+            raise NotImplementedError('Multiple comparators in ast.Compare')
+
+        lhs = self.visit(node.left)
+        rhs = self.visit(node.comparators[0])
+        op  = type(node.ops[0])
+        return self.generate_compare(op, lhs, rhs)
+
+    def visit_Return(self, node):
+        value = self.visit(node.value)
+        self.generate_return(value)
+
+    def generate_return(self, value):
+        raise NotImplementedError
+
+    def generate_compare(self, op_class, lhs, rhs):
+        raise NotImplementedError
+
+    def visit_BinOp(self, node):
+        lhs = self.visit(node.left)
+        rhs = self.visit(node.right)
+        op = type(node.op)
+        return self.generate_binop(op, lhs, rhs)
+
+    def generate_binop(self, op_class, lhs, rhs):
+        raise NotImplementedError
+
+    def visit_Assign(self, node):
+        if len(node.targets)!=1:
+            raise NotImplementedError('Mutliple targets in assignment.')
+        target = self.visit(node.targets[0])
+        value = self.visit(node.value)
+        return self.generate_assign(value, target)
+
+    def generate_assign(self, from_value, to_target):
+        raise NotImplementedError
+
+    def constant_number(self, node):
+        if isinstance(node, ast.Num):
+            retval = node.n
+        else:
+            if not isinstance(node, ast.Name):
+                raise NotImplementedError
+            if not isinstance(node.ctx, ast.Load):
+                raise NotImplementedError
+
+            retval = self.symbols[node.id]
+        if ( not isinstance(retval, int)
+             and not isinstance(retval, long)
+             and not isinstance(retval, float) ):
+            raise TypeError('Not a numeric constant.')
+        return retval
+
+    def visit_Num(self, node):
+        if type(node.n) is int:
+            return self.generate_constant_int(node.n)
+        elif type(node.n) is float:
+            return self.generate_constant_real(node.n)
+
+    def generate_constant_int(self, val):
+        raise NotImplementedError
+
+    def generate_constant_real(self, val):
+        raise NotImplementedError

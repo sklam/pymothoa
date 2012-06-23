@@ -19,15 +19,13 @@ class LLVMCodeGenerator(CodeGenerationBase):
     retty         = Descriptor(constant=True)
     argtys        = Descriptor(constant=True)
     function      = Descriptor(constant=True)
-    symbols       = Descriptor(constant=True, constrains=instanceof(dict))
+
 
     def __init__(self, jit_engine, retty, argtys, symbols):
-        super(LLVMCodeGenerator, self).__init__()
+        super(LLVMCodeGenerator, self).__init__(symbols)
         self.jit_engine = jit_engine
         self.retty = retty
         self.argtys = argtys
-        # symbol table
-        self.symbols = symbols.copy()
 
     def generate_function(self, name):
         retty = self.retty.type()
@@ -87,55 +85,7 @@ class LLVMCodeGenerator(CodeGenerationBase):
             raise InvalidCall(self.current_node)
 
         return self._call_function(fn, args, retty, argtys)
-    '''
-    def visit_Call(self, node):
-        from function import LLVMFunction
-        fn = self.visit(node.func)
 
-        if type(fn) is type and issubclass(fn, dialect.Construct):
-            if issubclass(fn, dialect.var):
-                assert not node.args
-                for kw in node.keywords:
-                    ty = self.visit(kw.value)
-                    name = kw.arg
-                    try:
-                        self.generate_declare(name, ty)
-                    except KeyError:
-                        raise VariableRedeclarationError(kw.value)
-                return
-            else:
-                assert False
-        elif fn is types.Vector:
-            assert not node.keywords
-            assert not node.starargs
-            assert not node.kwargs
-            ty = self.visit(node.args[0])
-            ct = self.get_constant(node.args[1])
-
-            newclsname = '__CustomVector__%s%d'%(ty.__name__, ct)
-            newcls = type(newclsname, (types.GenericVector,), {
-                'elemtype': ty,
-                'elemcount': ct,
-            })
-            return newcls
-        elif isinstance(fn, LLVMFunction):
-            assert not node.keywords
-            assert not node.starargs
-            assert not node.kwargs
-            args = map(self.visit, node.args)
-            return self.call_function(fn.code_llvm, args, fn.retty, fn.argtys)
-        elif fn is self.function:
-            assert not node.keywords
-            assert not node.starargs
-            assert not node.kwargs
-            args = map(self.visit, node.args)
-            return self.call_function(fn, args, self.retty, self.argtys)
-
-        assert False, fn
-    '''
-
-    def visit_Expr(self, node):
-        self.generic_visit(node)
 
     def visit_Name(self, node):
         if isinstance(node.ctx, ast.Load):
@@ -158,13 +108,6 @@ class LLVMCodeGenerator(CodeGenerationBase):
                 return self.symbols[node.id]
             except KeyError:
                 raise UndefinedSymbolError(node)
-
-    def visit_Attribute(self, node):
-        if isinstance(node.ctx, ast.Load):
-            value = self.visit(node.value)
-            return getattr(value, node.attr)
-        else:
-            assert False
 
     def visit_If(self, node):
         test = self.visit(node.test)
@@ -209,10 +152,11 @@ class LLVMCodeGenerator(CodeGenerationBase):
         assert looptype in ['range', 'xrange']
         assert len(iternode.args) in [1,2]
 
-        try:
-            counter_ptr = self.generate_declare(node.target.id, types.Int)
-        except KeyError:
+        counter_name = node.target.id
+        if counter_name in self.symbols:
             raise VariableRedeclarationError(node.target)
+        counter_ptr = self.generate_declare(node.target.id, types.Int)
+        self.symbols[counter_name] = counter_ptr
 
         iternode_arg_N = len(iternode.args)
         if iternode_arg_N==1:
@@ -251,51 +195,36 @@ class LLVMCodeGenerator(CodeGenerationBase):
         # incr
         self.builder.insert_at(bb_incr)
         one = LLVMConstant(LLVMType(types.Int), 1)
-        counter_next = self.builder.add(counter_ptr.value(self.builder), one.value(self.builder))
+        counter_next = self.builder.add(counter_ptr.value(self.builder),
+                                        one.value(self.builder))
         self.builder.store(counter_next, counter_ptr.pointer)
         self.builder.branch(bb_cond)
 
         # exit
         self.builder.insert_at(bb_exit)
 
-    def visit_Compare(self, node):
-        assert len(node.ops)==1
-        assert len(node.comparators)==1
-        lhs = self.visit(node.left)
-        rhs = self.visit(node.comparators[0])
-        op  = type(node.ops[0])
+    def generate_assign(self, from_value, to_target):
+        casted = to_target.type.cast(from_value, self.builder)
+        self.builder.store(casted, to_target.pointer)
+        return casted
 
+    def generate_compare(self, op_class, lhs, rhs):
         ty = lhs.type.coerce(rhs.type)
         lval = ty.cast(lhs, self.builder)
         rval = ty.cast(rhs, self.builder)
-
-        fn = getattr(ty, 'op_%s'%op.__name__.lower())
-
+        fn = getattr(ty, 'op_%s'%op_class.__name__.lower())
         return fn(lval, rval, self.builder)
 
-    def visit_Return(self, node):
-        value = self.visit(node.value)
+    def generate_return(self, value):
         casted = self.retty.cast(value, self.builder)
         self.builder.ret(casted)
 
-    def visit_Assign(self, node):
-        assert len(node.targets)==1, 'Not yet implemented multi target in assignment'
-        target = self.visit(node.targets[0])
-        value = self.visit(node.value)
-        casted = target.type.cast(value, self.builder)
-        self.builder.store(casted, target.pointer)
-
-    def visit_BinOp(self, node):
-        lhs = self.visit(node.left)
-        rhs = self.visit(node.right)
-        op = type(node.op)
-
+    def generate_binop(self, op_class, lhs, rhs):
         ty = lhs.type.coerce(rhs.type)
         lval = ty.cast(lhs, self.builder)
         rval = ty.cast(rhs, self.builder)
 
-        fn = getattr(ty, 'op_%s'%op.__name__.lower())
-
+        fn = getattr(ty, 'op_%s'%op_class.__name__.lower())
         return LLVMTempValue(fn(lval, rval, self.builder), ty)
 
     def visit_Subscript(self, node):
@@ -324,19 +253,15 @@ class LLVMCodeGenerator(CodeGenerationBase):
                 assert isinstance(node.ctx, ast.Load)
                 return LLVMTempValue(self.builder.load(ptr_offset), ptr.type.elemtype)
 
-    def visit_Num(self, node):
-        if type(node.n) is int:
-            return LLVMConstant(LLVMType(types.Int), node.n)
-        elif type(node.n) is float:
-            return LLVMConstant(LLVMType(types.Double), node.n)
+    def generate_constant_int(self, value):
+        return LLVMConstant(LLVMType(types.Int), value)
+
+    def generate_constant_real(self, value):
+        return LLVMConstant(LLVMType(types.Double), value)
 
     def generate_declare(self, name, ty):
         realty = LLVMType(ty)
-        if name in self.symbols:
-            raise KeyError(name)
-
-        self.symbols[name] = var = LLVMVariable(name, realty, self.builder)
-        return var
+        return LLVMVariable(name, realty, self.builder)
 
     def _call_function(self, fn, args, retty, argtys):
         arg_values = map(lambda X: LLVMTempValue(X.value(self.builder), X.type), args)
@@ -350,13 +275,3 @@ class LLVMCodeGenerator(CodeGenerationBase):
     def new_basic_block(self, name='uname'):
         self.__blockcounter += 1
         return self.function.append_basic_block('%s_%d'%(name, self.__blockcounter))
-
-    def get_constant(self, node):
-        if isinstance(node, ast.Num):
-            return node.n
-        else:
-            if not isinstance(node, ast.Name):
-                raise NotImplementedError
-            if not isinstance(node.ctx, ast.Load):
-                raise NotImplementedError
-            return self.symbols[node.id]

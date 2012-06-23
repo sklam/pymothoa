@@ -277,3 +277,47 @@ This error should have been caught by the Python parser.''')
                 raise UndefinedSymbolError(node)
         # unreachable
         raise AssertionError('unreachable')
+
+    def visit_If(self, node):
+        test = self.visit(node.test)
+        iftrue_body = node.body
+        orelse_body = node.orelse
+        self.generate_if(test, iftrue_body, orelse_body)
+
+    def visit_For(self, node):
+        if node.orelse:
+            raise NotImplementedError('Else in for-loop is not implemented.')
+        iternode = node.iter
+
+        str_only_support_forrange = 'Only for-range|for-xrange are supported.'
+        if not isinstance(iternode, ast.Call):
+            raise InvalidUseOfConstruct(str_only_support_forrange)
+
+        looptype = iternode.func.id
+        if looptype not in ['range', 'xrange']:
+            raise InvalidUseOfConstruct(str_only_support_forrange)
+
+        # counter variable
+        counter_name = node.target.id
+        if counter_name in self.symbols:
+            raise VariableRedeclarationError(node.target)
+
+        counter_ptr = self.generate_declare(node.target.id, types.Int)
+        self.symbols[counter_name] = counter_ptr
+
+        # range information
+        iternode_arg_N = len(iternode.args)
+        if iternode_arg_N==1: # only END is given
+            zero = self.generate_constant_int(0)
+            initcount = zero # init count is implicitly zero
+            endcountpos = 0
+        elif iternode_arg_N==2: # both BEGIN and END are given
+            initcount = self.visit(iternode.args[0]) # init count is given
+            endcountpos = 1
+        else:
+            raise NotImplementedError('Range(BEGIN, END, STEP) is not implemented')
+
+        endcount = self.visit(iternode.args[endcountpos]) # end count
+
+        loopbody = node.body
+        self.generate_for_range(counter_ptr, initcount, endcount, loopbody)

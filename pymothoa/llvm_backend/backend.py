@@ -88,99 +88,7 @@ class LLVMCodeGenerator(CodeGenerationBase):
 
         return self._call_function(fn, args, retty, argtys)
 
-    def visit_If(self, node):
-        test = self.visit(node.test)
 
-        bb_if = self.new_basic_block('if')
-        bb_else = self.new_basic_block('else')
-        bb_endif = self.new_basic_block('endif')
-        is_endif_reachable = False
-
-        self.builder.cond_branch(test, bb_if, bb_else)
-
-
-        # true branch
-        self.builder.insert_at(bb_if)
-        for stmt in node.body:
-            self.visit(stmt)
-        else:
-            if not self.builder.is_block_closed():
-                self.builder.branch(bb_endif)
-                is_endif_reachable=True
-
-        # false branch
-        self.builder.insert_at(bb_else)
-        for stmt in node.orelse:
-            self.visit(stmt)
-        else:
-            if not self.builder.is_block_closed():
-                self.builder.branch(bb_endif)
-                is_endif_reachable=True
-
-        # endif
-        self.builder.insert_at(bb_endif)
-        if not is_endif_reachable:
-            self.builder.unreachable()
-
-    def visit_For(self, node):
-        assert not node.orelse, 'Else in for-loop is not supported yet'
-
-        iternode = node.iter
-        assert isinstance(iternode, ast.Call)
-        looptype = iternode.func.id
-        assert looptype in ['range', 'xrange']
-        assert len(iternode.args) in [1,2]
-
-        counter_name = node.target.id
-        if counter_name in self.symbols:
-            raise VariableRedeclarationError(node.target)
-        counter_ptr = self.generate_declare(node.target.id, types.Int)
-        self.symbols[counter_name] = counter_ptr
-
-        iternode_arg_N = len(iternode.args)
-        if iternode_arg_N==1:
-            zero = LLVMConstant(LLVMType(types.Int), 0)
-            initcount = zero
-            endcountpos = 0
-        elif iternode_arg_N==2:
-            initcount = self.visit(iternode.args[0])
-            endcountpos = 1
-        else:
-            assert False
-
-        endcount = self.visit(iternode.args[endcountpos]).value(self.builder)
-        self.builder.store(initcount.value(self.builder), counter_ptr.pointer)
-
-        bb_cond = self.new_basic_block('loopcond')
-        bb_body = self.new_basic_block('loopbody')
-        bb_incr = self.new_basic_block('loopincr')
-        bb_exit = self.new_basic_block('loopexit')
-
-        self.builder.branch(bb_cond)
-
-        # condition
-        self.builder.insert_at(bb_cond)
-        test = self.builder.icmp(llvm.ICMP_SLT, counter_ptr.value(self.builder), endcount)
-        self.builder.cond_branch(test, bb_body, bb_exit)
-
-        # body
-        self.builder.insert_at(bb_body)
-
-        for stmt in node.body:
-            self.visit(stmt)
-        else:
-            self.builder.branch(bb_incr)
-
-        # incr
-        self.builder.insert_at(bb_incr)
-        one = LLVMConstant(LLVMType(types.Int), 1)
-        counter_next = self.builder.add(counter_ptr.value(self.builder),
-                                        one.value(self.builder))
-        self.builder.store(counter_next, counter_ptr.pointer)
-        self.builder.branch(bb_cond)
-
-        # exit
-        self.builder.insert_at(bb_exit)
 
     def generate_assign(self, from_value, to_target):
         casted = to_target.type.cast(from_value, self.builder)
@@ -205,7 +113,6 @@ class LLVMCodeGenerator(CodeGenerationBase):
 
         fn = getattr(ty, 'op_%s'%op_class.__name__.lower())
         return LLVMTempValue(fn(lval, rval, self.builder), ty)
-
 
     def generate_constant_int(self, value):
         return LLVMConstant(LLVMType(types.Int), value)
@@ -238,7 +145,7 @@ class LLVMCodeGenerator(CodeGenerationBase):
         return LLVMTempValue(elemval, ptr.type.elemtype)
 
     def generate_vector_store_elem(self, ptr, idx):
-        zero = LLVMConstant(LLVMType(types.Int), 0)
+        zero = self.generate_constant_int(0)
         indices = map(lambda X: X.value(self.builder), [zero, idx])
         addr = self.builder.gep2(ptr.pointer, indices)
         return LLVMTempPointer(addr, ptr.type.elemtype)
@@ -254,3 +161,68 @@ class LLVMCodeGenerator(CodeGenerationBase):
         idx_val = idx.value(self.builder)
         ptr_offset = self.builder.gep(ptr_val, idx_val)
         return LLVMTempPointer(ptr_offset, ptr.type.elemtype)
+
+    def generate_if(self, test, iftrue, orelse):
+        bb_if = self.new_basic_block('if')
+        bb_else = self.new_basic_block('else')
+        bb_endif = self.new_basic_block('endif')
+        is_endif_reachable = False
+
+        self.builder.cond_branch(test, bb_if, bb_else)
+
+        # true branch
+        self.builder.insert_at(bb_if)
+        for stmt in iftrue:
+            self.visit(stmt)
+        else:
+            if not self.builder.is_block_closed():
+                self.builder.branch(bb_endif)
+                is_endif_reachable=True
+
+        # false branch
+        self.builder.insert_at(bb_else)
+        for stmt in orelse:
+            self.visit(stmt)
+        else:
+            if not self.builder.is_block_closed():
+                self.builder.branch(bb_endif)
+                is_endif_reachable=True
+
+        # endif
+        self.builder.insert_at(bb_endif)
+        if not is_endif_reachable:
+            self.builder.unreachable()
+
+    def generate_for_range(self, counter_ptr, initcount, endcount, loopbody):
+        self.builder.store(initcount.value(self.builder), counter_ptr.pointer)
+
+        bb_cond = self.new_basic_block('loopcond')
+        bb_body = self.new_basic_block('loopbody')
+        bb_incr = self.new_basic_block('loopincr')
+        bb_exit = self.new_basic_block('loopexit')
+
+        self.builder.branch(bb_cond)
+
+        # condition
+        self.builder.insert_at(bb_cond)
+        test = self.builder.icmp(llvm.ICMP_SLT, counter_ptr.value(self.builder), endcount.value(self.builder))
+        self.builder.cond_branch(test, bb_body, bb_exit)
+
+        # body
+        self.builder.insert_at(bb_body)
+
+        for stmt in loopbody:
+            self.visit(stmt)
+        else:
+            self.builder.branch(bb_incr)
+
+        # incr
+        self.builder.insert_at(bb_incr)
+        one = self.generate_constant_int(1)
+        counter_next = self.builder.add(counter_ptr.value(self.builder),
+                                        one.value(self.builder))
+        self.builder.store(counter_next, counter_ptr.pointer)
+        self.builder.branch(bb_cond)
+
+        # exit
+        self.builder.insert_at(bb_exit)

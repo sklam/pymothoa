@@ -43,6 +43,10 @@ def test_invalid_vector_ctor_3():
     var ( A = Int )
     var ( vec = Vector(A, 0) )
 
+@function(args=[ [Float] ])
+def test_invalid_array_typecode(A):
+    pass
+
 class Test(unittest.TestCase):
     def test_no_return_error(self):
         with self.assertRaises(CompilerError) as handle:
@@ -91,6 +95,14 @@ class Test(unittest.TestCase):
             test_invalid_vector_ctor_3.compile()
         print handle.exception
         self.assertTrue(handle.exception.is_due_to(InvalidUseOfConstruct))
+
+    def test_invalid_array_typecode(self):
+        from array import array
+        A = array('i', range(10))
+        with self.assertRaises(TypeError) as handle:
+            test_invalid_array_typecode(A)
+        print 'Invalid argument of test_invalid_array_typecode()'
+        print handle.exception
 
 if __name__ == '__main__':
     unittest.main()

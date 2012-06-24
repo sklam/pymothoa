@@ -5,6 +5,19 @@ from pymothoa.util.descriptor import Descriptor, instanceof
 from pymothoa import types
 import llvm # binding
 
+array_type_code_to_ctype = {
+    'c': ctypes.c_char,
+    'b': ctypes.c_ubyte,
+    'B': ctypes.c_byte,
+    'h': ctypes.c_short,
+    'H': ctypes.c_ushort,
+    'i': ctypes.c_int,
+    'I': ctypes.c_uint,
+    'l': ctypes.c_long,
+    'L': ctypes.c_ulong,
+    'f': ctypes.c_float,
+    'd': ctypes.c_double,
+}
 
 class LLVMType(object):
 
@@ -29,7 +42,6 @@ class LLVMType(object):
             if type(datatype) is type and issubclass(datatype, types.GenericVector):
                 elemtype = LLVMType(datatype.elemtype)
                 elemcount = datatype.elemcount
-
                 # determine mixin classes to install
                 if isinstance(elemtype, LLVMBasicFloatMixin):
                     if isinstance(elemtype, LLVMBasicDoubleMixin):
@@ -40,7 +52,6 @@ class LLVMType(object):
                     mixins = (LLVMBasicIntMixin ,)
                 else:
                     raise NotImplementedError
-
                 # create new class for the vector type
                 clsname = 'LLVMVector__%s%d'%(datatype.elemtype.__name__, elemcount)
                 vectorcls = type(clsname, (LLVMVector,)+mixins, {})
@@ -196,11 +207,34 @@ class LLVMUnboundedArray(types.GenericUnboundedArray):
         return llvm.TypeFactory.make_pointer(self.elemtype.type())
 
     def argument_adaptor(self, val):
-        from numpy import ndarray
-        if isinstance(val, ndarray):
-            assert val.dtype == self.elemtype.ctype()
-            return val.ctypes.data_as(self.ctype())
-        raise TypeError(type(val))
+        try: # try to use numpy.ndarray
+            from numpy import ndarray
+            if isinstance(val, ndarray):
+                if val.dtype != self.elemtype.ctype():
+                    raise TypeError('dtype of the numpy.ndarray '
+                                    'does not match argument type.')
+                return val.ctypes.data_as(self.ctype())
+        except ImportError:
+            pass
+
+        # No numpy or val is not ndarray.
+        # Try to use array.array
+        from array import array
+        if isinstance(val, array):
+            elemctype = self.elemtype.ctype()
+
+            if array_type_code_to_ctype[val.typecode]!=elemctype:
+                raise TypeError('array.array contains a different datatype.')
+
+            address, length = val.buffer_info()
+            ptr = ctypes.cast(address, self.ctype())
+            return ptr
+
+        # Build a ctype array from iterable. This can be very slow.
+        ctype = self.elemtype.ctype()
+        argtype = ctype*len(val)
+        return argtype(*val)
+
 
 class LLVMVector(types.GenericVector):
     elemtype = Descriptor(constant=True, constrains=instanceof(types.BuiltinType))
@@ -232,3 +266,6 @@ class LLVMVector(types.GenericVector):
             raise TypeError('Invalid casting')
 
         return self
+
+    def argument_adaptor(self, val):
+        raise NotImplementedError('Cannot use vector as argument.')

@@ -15,7 +15,6 @@ def test_array(A, N):
 
 test_array_py = test_array.run_py
 
-
 @function(ret=Float, args=[ [Float], Int])
 def test_array2(A, N):
     var ( result = Float,
@@ -36,14 +35,17 @@ test_array2_py = test_array2.run_py
 
 import unittest
 from random import random
-from numpy import array
+import numpy as np
+import array
 from ctypes import c_float
 from _util import benchmark, relative_error, benchmark_summary
 
 class Test(unittest.TestCase):
     def setUp(self):
-        self.N = 256
-        self.A = array(map(lambda _: random()+1, range(self.N)), dtype=c_float)
+        self.N = 1024
+        self.B = map(lambda _: random()+1, range(self.N))
+        self.A = np.array(self.B, dtype=c_float)
+        self.C = array.array('f', self.B)
         self.REP = 512
 
     def test_array(self):
@@ -55,6 +57,31 @@ class Test(unittest.TestCase):
             with bm.entry('JIT'):
                 for _ in xrange(self.REP):
                     jit_result = test_array(self.A, self.N)
+
+        self.assertTrue(relative_error(py_result, jit_result) < 0.01/100)
+
+    def test_array_from_list(self):
+        # This is extremely slow!
+        with benchmark() as bm:
+            with bm.entry('Python'):
+                for _ in xrange(self.REP):
+                    py_result = test_array_py(self.B, self.N)
+
+            with bm.entry('JIT'):
+                for _ in xrange(self.REP):
+                    jit_result = test_array(self.B, self.N)
+
+        self.assertTrue(relative_error(py_result, jit_result) < 0.01/100)
+
+    def test_array_from_array(self):
+        with benchmark() as bm:
+            with bm.entry('Python'):
+                for _ in xrange(self.REP):
+                    py_result = test_array_py(self.C, self.N)
+
+            with bm.entry('JIT'):
+                for _ in xrange(self.REP):
+                    jit_result = test_array(self.C, self.N)
 
         self.assertTrue(relative_error(py_result, jit_result) < 0.01/100)
 
@@ -81,6 +108,3 @@ if __name__ == '__main__':
         print 'End Assembly'.center(80, '=')
 
     benchmark_summary()
-
-
-

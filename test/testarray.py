@@ -5,7 +5,7 @@ from pymothoa.compiler import function
 from pymothoa.types import *
 from pymothoa.dialect import *
 
-@function(ret=Float, args=[ [Float], Int])
+@function(ret=Float, args=[ Array(Float), Int])
 def test_array(A, N):
     var ( temp = Float )
     temp = 0
@@ -15,7 +15,7 @@ def test_array(A, N):
 
 test_array_py = test_array.run_py
 
-@function(ret=Float, args=[ [Float], Int])
+@function(ret=Float, args=[ Array(Float), Int])
 def test_array2(A, N):
     var ( result = Float,
           temp   = Float,

@@ -1,6 +1,6 @@
 import logging
 import unittest
-logging.basicConfig()
+logging.basicConfig(level=logging.DEBUG)
 
 from pymothoa.compiler import function
 from pymothoa.compiler_errors import *
@@ -43,9 +43,14 @@ def test_invalid_vector_ctor_3():
     var ( A = Int )
     var ( vec = Vector(A, 0) )
 
-@function(args=[ [Float] ])
+@function(args=[ Array(Float) ])
 def test_invalid_array_typecode(A):
     pass
+
+@function(later=True)
+def test_invalid_array_ctor():
+    var ( array = Array(Int) )
+
 
 class Test(unittest.TestCase):
     def test_no_return_error(self):
@@ -103,6 +108,12 @@ class Test(unittest.TestCase):
             test_invalid_array_typecode(A)
         print 'Invalid argument of test_invalid_array_typecode()'
         print handle.exception
+
+    def test_invalid_array_ctor(self):
+        with self.assertRaises(CompilerError) as handle:
+            test_invalid_array_ctor.compile()
+        print handle.exception
+        self.assertTrue(handle.exception.is_due_to(InvalidUseOfConstruct))
 
 if __name__ == '__main__':
     unittest.main()

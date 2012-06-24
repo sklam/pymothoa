@@ -16,13 +16,25 @@ class Void(BuiltinType):
 class GenericInt(BuiltinType):
     pass
 
-class Int32(GenericInt):
+class Int8(GenericInt):
     rank = 10
+    bitsize = 8
+    signed = True
+
+
+class Int16(GenericInt):
+    rank = 11
+    bitsize = 16
+    signed = True
+
+
+class Int32(GenericInt):
+    rank = 12
     bitsize = 32
     signed = True
 
 class Int64(GenericInt):
-    rank = 11
+    rank = 13
     bitsize = 64
     signed = True
 
@@ -58,3 +70,9 @@ class GenericVector(Type):
 def Vector(ty, ct):
     pass
 
+class Array(object):
+    __slots__ = 'elemtype'
+    def __init__(self, elemtype, *ignored):
+        '''Note: elemcount is ignored when using in the Python scope.
+        '''
+        self.elemtype = elemtype

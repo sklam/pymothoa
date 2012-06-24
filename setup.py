@@ -49,7 +49,10 @@ setup (name = 'Pymothoa',
        author = 'Siu Kwan Lam',
 
        package_dir={'pymothoa.llvm_backend.llvm': 'llvm'},
-       packages = ['pymothoa', 'pymothoa.llvm_backend', 'pymothoa.util'],
+       packages = [ 'pymothoa',
+                    'pymothoa.llvm_backend',
+                    'pymothoa.util',
+                    'pymothoa.builtins',],
 
        py_modules = ['pymothoa.llvm_backend.llvm.llvm_wrapper'],
 

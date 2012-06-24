@@ -5,9 +5,9 @@ from pymothoa.compiler import function
 from pymothoa.types import *
 from pymothoa.dialect import *
 
-VW = 4
+VW = 4 # width of vector (unit: # of element)
 
-@function(ret=Float, args=[ [Float], Int])
+@function(ret=Float, args=[ Array(Float), Int])
 def test_vector_float(A, N):
     var (
       temp   = Vector(Float, VW),
@@ -30,7 +30,7 @@ def test_vector_float(A, N):
     return acc[0] * acc[1] * acc[2] * acc[3]
 
 
-@function(ret=Double, args=[ [Double], Int])
+@function(ret=Double, args=[ Array(Double), Int])
 def test_vector_double(A, N):
     var (
       temp   = Vector(Double, VW),
@@ -53,7 +53,7 @@ def test_vector_double(A, N):
     return acc[0] * acc[1] * acc[2] * acc[3]
 
 
-@function(ret=Int, args=[ [Int], Int])
+@function(ret=Int, args=[ Array(Int), Int])
 def test_vector_int(A, N):
     var (
       temp   = Vector(Int, VW),

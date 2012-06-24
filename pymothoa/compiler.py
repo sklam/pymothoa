@@ -1,6 +1,6 @@
 import types
 
-def function(ret=types.Void, args=[], later=False, opt=True):
+def function(func=None, ret=types.Void, args=[], later=False, opt=True):
     def wrapper(func):
         assert type(func).__name__=='function', (
                 '"%s" is not a function.'%func.__name__
@@ -15,12 +15,23 @@ def function(ret=types.Void, args=[], later=False, opt=True):
                 llvmfn.optimize()
 
         return llvmfn
-    return wrapper
+
+    if func is None:
+        return wrapper
+    else:
+        return wrapper(func)
 
 def declaration(ret=types.Void, args=[]):
     def wrapper(func):
         from llvm_backend.function import LLVMFunction
         namespace = func.func_globals['__name__']
         realname = '.'.join([namespace, func.__name__])
+        return LLVMFunction.new_declaration(realname, ret, args)
+    return wrapper
+
+def builtin_declaration(ret=types.Void, args=[], prefix=''):
+    def wrapper(func):
+        from llvm_backend.function import LLVMFunction
+        realname = '%s%s'%(prefix, func.__name__)
         return LLVMFunction.new_declaration(realname, ret, args)
     return wrapper

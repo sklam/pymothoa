@@ -5,7 +5,7 @@ from pymothoa.util.descriptor import Descriptor, instanceof
 from pymothoa import types
 import llvm # binding
 
-array_type_code_to_ctype = {
+_array_type_code_to_ctype = {
     'c': ctypes.c_char,
     'b': ctypes.c_ubyte,
     'B': ctypes.c_byte,
@@ -24,6 +24,8 @@ class LLVMType(object):
     def __new__(cls, datatype):
         TYPE_MAP = {
             types.Void      : LLVMVoid,
+            types.Int8      : LLVMInt8,
+            types.Int16     : LLVMInt16,
             types.Int32     : LLVMInt32,
             types.Int64     : LLVMInt64,
             types.Float     : LLVMFloat,
@@ -31,15 +33,13 @@ class LLVMType(object):
         }
         try:
             return object.__new__(TYPE_MAP[datatype])
-        except TypeError:
-                assert type(datatype) is list
-                assert len(datatype) == 1
-                elemtype = datatype[0]
+        except KeyError:
+            if isinstance(datatype, types.Array): # Unbounded array type
+                elemtype = datatype.elemtype
                 obj = object.__new__(LLVMUnboundedArray)
                 obj.elemtype = LLVMType(elemtype)
                 return obj
-        except KeyError:
-            if type(datatype) is type and issubclass(datatype, types.GenericVector):
+            elif type(datatype) is type and issubclass(datatype, types.GenericVector):
                 elemtype = LLVMType(datatype.elemtype)
                 elemcount = datatype.elemcount
                 # determine mixin classes to install
@@ -77,6 +77,8 @@ class LLVMBasicIntMixin(object):
 
     def ctype(self):
         mapping = {
+             8: ctypes.c_int8,
+            16: ctypes.c_int16,
             32: ctypes.c_int32,
             64: ctypes.c_int64,
         }
@@ -184,6 +186,12 @@ class LLVMBasicDoubleMixin(LLVMBasicFloatMixin):
     def type(self):
         return llvm.TypeFactory.make_double()
 
+class LLVMInt8(types.Int8, LLVMBasicIntMixin):
+    pass
+
+class LLVMInt16(types.Int16, LLVMBasicIntMixin):
+    pass
+
 class LLVMInt32(types.Int32, LLVMBasicIntMixin):
     pass
 
@@ -223,7 +231,7 @@ class LLVMUnboundedArray(types.GenericUnboundedArray):
         if isinstance(val, array):
             elemctype = self.elemtype.ctype()
 
-            if array_type_code_to_ctype[val.typecode]!=elemctype:
+            if _array_type_code_to_ctype[val.typecode]!=elemctype:
                 raise TypeError('array.array contains a different datatype.')
 
             address, length = val.buffer_info()

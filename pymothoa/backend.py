@@ -98,13 +98,36 @@ This error should have been caught by the Python parser.''')
             else:
                 return handler(fn, node)
 
+        elif fn is types.Array:
+            # Defining a array type
+            if len(node.args) != 2:
+                raise InvalidUseOfConstruct(
+                        node,
+                        ('Array constructor takes two arguments.\n'
+                         'Hint: Array(ElemType, ElemCount)')
+                      )
+            if node.keywords or node.starargs or node.kwargs:
+                raise InvalidUseOfConstruct(
+                            node,
+                            'Cannot use keyword or star arguments.'
+                      )
+
+            elemty = self.visit(node.args[0])
+            elemct = self.constant_number(node.args[1])
+
+            if type(elemty) is not type or not issubclass(elemty, types.Type):
+                raise InvalidUseOfConstruct(
+                            node,
+                            'Expecting a type for element type of vector.'
+                      )
+            raise NotImplementedError
         elif fn is types.Vector:
             # Defining a vector type
             if len(node.args) != 2:
                 raise InvalidUseOfConstruct(
                         node,
-                        '''Vector constructor takes two arguments.
-Hint: Vector(ElemType, ElemCount)'''
+                        ('Vector constructor takes two arguments.\n'
+                         'Hint: Vector(ElemType, ElemCount)')
                       )
 
             if node.keywords or node.starargs or node.kwargs:

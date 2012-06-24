@@ -146,6 +146,7 @@ public:
 
     llvm::Value * bitwise_or(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
 
+    llvm::Value * bitwise_neg(llvm::Value * value, const char * name="");
     // integer operations
 
     llvm::Value * add(llvm::Value * lhs, llvm::Value * rhs, const char * name="");

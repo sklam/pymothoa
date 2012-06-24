@@ -259,4 +259,9 @@ class LLVMCodeGenerator(CodeGenerationBase):
         pred = self.builder.phi(boolty.type(), [bb_left, bb_right], [left, right]);
         return LLVMTempValue(pred, boolty)
 
+    def generate_not(self, operand):
+        boolty = LLVMType(types.Bool)
+        boolval = boolty.cast(operand, self.builder)
+        negated = boolty.op_not(boolval, self.builder)
+        return LLVMTempValue(negated, boolty)
 

@@ -17075,6 +17075,132 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_Builder_bitwise_neg__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Builder *arg1 = (Builder *) 0 ;
+  llvm::Value *arg2 = (llvm::Value *) 0 ;
+  char *arg3 = (char *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  int res3 ;
+  char *buf3 = 0 ;
+  int alloc3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  llvm::Value *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:Builder_bitwise_neg",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Builder, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Builder_bitwise_neg" "', argument " "1"" of type '" "Builder *""'"); 
+  }
+  arg1 = reinterpret_cast< Builder * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Builder_bitwise_neg" "', argument " "2"" of type '" "llvm::Value *""'"); 
+  }
+  arg2 = reinterpret_cast< llvm::Value * >(argp2);
+  res3 = SWIG_AsCharPtrAndSize(obj2, &buf3, NULL, &alloc3);
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Builder_bitwise_neg" "', argument " "3"" of type '" "char const *""'");
+  }
+  arg3 = reinterpret_cast< char * >(buf3);
+  result = (llvm::Value *)(arg1)->bitwise_neg(arg2,(char const *)arg3);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (alloc3 == SWIG_NEWOBJ) delete[] buf3;
+  return resultobj;
+fail:
+  if (alloc3 == SWIG_NEWOBJ) delete[] buf3;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Builder_bitwise_neg__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Builder *arg1 = (Builder *) 0 ;
+  llvm::Value *arg2 = (llvm::Value *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  llvm::Value *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:Builder_bitwise_neg",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Builder, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Builder_bitwise_neg" "', argument " "1"" of type '" "Builder *""'"); 
+  }
+  arg1 = reinterpret_cast< Builder * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Builder_bitwise_neg" "', argument " "2"" of type '" "llvm::Value *""'"); 
+  }
+  arg2 = reinterpret_cast< llvm::Value * >(argp2);
+  result = (llvm::Value *)(arg1)->bitwise_neg(arg2);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_llvm__Value, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Builder_bitwise_neg(PyObject *self, PyObject *args) {
+  int argc;
+  PyObject *argv[4];
+  int ii;
+  
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = args ? (int)PyObject_Length(args) : 0;
+  for (ii = 0; (ii < 3) && (ii < argc); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 2) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_Builder, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_llvm__Value, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        return _wrap_Builder_bitwise_neg__SWIG_1(self, args);
+      }
+    }
+  }
+  if (argc == 3) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_Builder, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_llvm__Value, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        int res = SWIG_AsCharPtrAndSize(argv[2], 0, NULL, 0);
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          return _wrap_Builder_bitwise_neg__SWIG_0(self, args);
+        }
+      }
+    }
+  }
+  
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'Builder_bitwise_neg'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    Builder::bitwise_neg(llvm::Value *,char const *)\n"
+    "    Builder::bitwise_neg(llvm::Value *)\n");
+  return 0;
+}
+
+
 SWIGINTERN PyObject *_wrap_Builder_add__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Builder *arg1 = (Builder *) 0 ;
@@ -21483,6 +21609,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Builder_phi", _wrap_Builder_phi, METH_VARARGS, NULL},
 	 { (char *)"Builder_bitwise_and", _wrap_Builder_bitwise_and, METH_VARARGS, NULL},
 	 { (char *)"Builder_bitwise_or", _wrap_Builder_bitwise_or, METH_VARARGS, NULL},
+	 { (char *)"Builder_bitwise_neg", _wrap_Builder_bitwise_neg, METH_VARARGS, NULL},
 	 { (char *)"Builder_add", _wrap_Builder_add, METH_VARARGS, NULL},
 	 { (char *)"Builder_sub", _wrap_Builder_sub, METH_VARARGS, NULL},
 	 { (char *)"Builder_mul", _wrap_Builder_mul, METH_VARARGS, NULL},

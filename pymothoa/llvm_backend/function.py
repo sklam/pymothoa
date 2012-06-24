@@ -19,14 +19,38 @@ class LLVMFunction(object):
     c_funcptr_type = Descriptor(constant=True)
     c_funcptr = Descriptor(constant=True)
 
+    _workarounds = Descriptor(constant=True)
+
+    # wordarounds
+    RET_BOOL_WORKAROUND='converts return type to int8'
+    ARG_BOOL_WORKAROUND='converts argument type to int8'
+
     manager = LLVMModuleManager() # class member
 
     @classmethod
     def new(cls, orig_func, retty, argtys):
         self = cls()
         self.code_python = orig_func
-        self.retty = LLVMType(retty)
-        self.argtys = map(lambda X: LLVMType(X), argtys)
+
+        self._workarounds = set()
+
+        # Take care of return type
+        if retty is types.Bool: # boolean workaround
+            # Change return type to 8-bit int
+            self.retty = LLVMType(types.Int8)
+            self._workarounds.add(self.RET_BOOL_WORKAROUND)
+        else:
+            self.retty = LLVMType(retty)
+
+        # Take care of argument type
+        self.argtys=[]
+        for argty in argtys:
+            if argty is types.Bool: # boolean workaround
+                self.argtys.append(LLVMType(types.Int8))
+                self._workarounds.add(self.ARG_BOOL_WORKAROUND)
+            else:
+                self.argtys.append(LLVMType(argty))
+
         return self
 
     @classmethod
@@ -90,7 +114,7 @@ class LLVMFunction(object):
         # Cast the arguments to corresponding types
         argvals = [aty.argument_adaptor(aval) for aty, aval in zip(self.argtys, args)]
         try:
-            return self.c_funcptr(*argvals)
+            retval = self.c_funcptr(*argvals)
         except AttributeError: # Has not create binding to the function.
             # Obtain pointer to function from the JIT engine
             addr = self.manager.jit_engine.get_pointer_to_function(self.code_llvm)
@@ -101,7 +125,12 @@ class LLVMFunction(object):
             self.c_funcptr_type = CFUNCTYPE(c_retty, *c_argtys)
             self.c_funcptr = cast( int(addr), self.c_funcptr_type )
             # Call the function
-            return self.c_funcptr(*argvals)
+            retval = self.c_funcptr(*argvals)
+        # Apply any workaround to the return value
+        if self.RET_BOOL_WORKAROUND in self._workarounds:
+            retval = bool(retval)
+
+        return retval
 
 
     __call__ = run_jit

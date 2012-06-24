@@ -17,39 +17,51 @@ def test_bool_or(A, B):
         return 1
     return 0
 
+@function(ret=Bool, args=[Int, Int])
+def test_bool_lte(A, B):
+    return A <= B
+
+@function(ret=Bool, args=[Float, Float])
+def test_bool_gte(A, B):
+    return A >= B
+
+@function(ret=Bool, args=[Bool])
+def test_bool_not(A):
+    return not A
 
 import unittest
 from random import random, randint
 
 class Test(unittest.TestCase):
 
+    def setUp(self):
+        self.REP = 100
+
     def test_bool_and(self):
-        args = (1, 2)
-        self.assertTrue(test_bool_and(*args)==test_bool_and.run_py(*args))
-        args = (2, 2)
-        self.assertTrue(test_bool_and(*args)==test_bool_and.run_py(*args))
-        args = (3, 2)
-        self.assertTrue(test_bool_and(*args)==test_bool_and.run_py(*args))
-        args = (4, 2)
-        self.assertTrue(test_bool_and(*args)==test_bool_and.run_py(*args))
-        args = (5, 2)
-        self.assertTrue(test_bool_and(*args)==test_bool_and.run_py(*args))
-        args = (randint(0, 100), randint(0, 100))
-        self.assertTrue(test_bool_and(*args)==test_bool_and.run_py(*args))
+        for _ in xrange(self.REP):
+            args = (randint(0, 100), randint(0, 100))
+            self.assertEqual(test_bool_and(*args), test_bool_and.run_py(*args))
 
     def test_bool_or(self):
-        args = (1, 2)
-        self.assertTrue(test_bool_or(*args)==test_bool_or.run_py(*args))
-        args = (2, 2)
-        self.assertTrue(test_bool_or(*args)==test_bool_or.run_py(*args))
-        args = (3, 2)
-        self.assertTrue(test_bool_or(*args)==test_bool_or.run_py(*args))
-        args = (4, 2)
-        self.assertTrue(test_bool_or(*args)==test_bool_or.run_py(*args))
-        args = (5, 2)
-        self.assertTrue(test_bool_or(*args)==test_bool_or.run_py(*args))
-        args = (randint(0, 100), randint(0, 100))
-        self.assertTrue(test_bool_or(*args)==test_bool_or.run_py(*args))
+        for _ in xrange(self.REP):
+            args = (randint(0, 100), randint(0, 100))
+            self.assertEqual(test_bool_or(*args), test_bool_or.run_py(*args))
+
+    def test_bool_lte(self):
+        for _ in xrange(self.REP):
+            args = (randint(0, 100), randint(0, 100))
+            result = test_bool_lte(*args)
+            self.assertEqual(result, (args[0]<=args[1]))
+
+    def test_bool_gte(self):
+        for _ in xrange(self.REP):
+            args = (random(), random())
+            result = test_bool_gte(*args)
+            self.assertEqual(result, (args[0]>=args[1]))
+
+    def test_bool_not(self):
+        self.assertFalse(test_bool_not(True))
+        self.assertTrue(test_bool_not(False))
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Test)

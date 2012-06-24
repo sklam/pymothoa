@@ -47,13 +47,10 @@ class LLVMType(object):
                 elemtype = LLVMType(datatype.elemtype)
                 elemcount = datatype.elemcount
                 # determine mixin classes to install
-                if isinstance(elemtype, LLVMBasicFloatMixin):
-                    if isinstance(elemtype, LLVMBasicDoubleMixin):
-                        mixins = (LLVMBasicFloatMixin ,)
-                    else:
-                        mixins = (LLVMBasicDoubleMixin ,)
-                elif isinstance(elemtype, LLVMBasicIntMixin):
-                    mixins = (LLVMBasicIntMixin ,)
+                if isinstance(elemtype, LLVMRealBinOpMixin):
+                    mixins = (LLVMRealBinOpMixin ,)
+                elif isinstance(elemtype, LLVMIntBinOpMixin):
+                    mixins = (LLVMIntBinOpMixin ,)
                 else:
                     raise NotImplementedError
                 # create new class for the vector type
@@ -76,54 +73,23 @@ class LLVMVoid(types.Void):
 
 class LLVMBool(types.Bool):
     def ctype(self):
-        raise NotImplementedError
+        return NotImplementedError('No equivalence ctype for 1-bit boolean')
 
     def type(self):
         return llvm.TypeFactory.make_int(1) # 1-bit integer
 
     def cast(self, old, builder):
-        if old.type == self: return old.value(builder)
-        else: raise TypeError('Cannot cast to boolean.'+'%s %s'%(old.type, self))
-
-
-class LLVMBasicIntMixin(object):
-
-    def argument_adaptor(self, val):
-        return val
-
-    def ctype(self):
-        mapping = {
-             8: ctypes.c_int8,
-            16: ctypes.c_int16,
-            32: ctypes.c_int32,
-            64: ctypes.c_int64,
-        }
-        return mapping[self.bitsize]
-
-    def type(self):
-        return llvm.TypeFactory.make_int(self.bitsize)
-
-    def constant(self, val):
-        if type(val) is not int:
-            raise TypeError(type(val))
-        else:
-            return llvm.ConstantFactory.make_int(self.type(), val)
-
-    def cast(self, old, builder):
         if old.type == self:
             return old.value(builder)
-        elif isinstance(old.type, types.GenericInt):
-            assert old.type.bitsize != self.bitsize
-            val = old.value(builder)
-            return builder.icast(val, self.type(), self.signed)
-        elif isinstance(old.type, types.GenericReal):
-            val = old.value(builder)
-            return builder.fptosi(val, self.type())
+        elif isinstance(old.type, types.GenericInt) or isinstance(old.type, types.GenericReal):
+            return old.type.op_eq(old.value(builder), old.type.constant(0), builder)
         else:
-            print 'cast %s -> %s'%(old.type, self)
+            raise TypeError('Cannot cast to boolean.'+'%s %s'%(old.type, self))
 
-        assert False
+    def op_not(self, value, builder):
+        return builder.bitwise_neg(value)
 
+class LLVMIntBinOpMixin(object):
     def op_add(self, lhs, rhs, builder):
         return builder.add(lhs, rhs)
 
@@ -151,34 +117,48 @@ class LLVMBasicIntMixin(object):
     def op_gte(self, lhs, rhs, builder):
         return builder.icmp(llvm.ICMP_SGE, lhs, rhs)
 
-class LLVMBasicFloatMixin(object):
+class LLVMBasicIntMixin(LLVMIntBinOpMixin):
 
     def argument_adaptor(self, val):
         return val
 
     def ctype(self):
-        return ctypes.c_float
+        mapping = {
+             8: ctypes.c_int8,
+            16: ctypes.c_int16,
+            32: ctypes.c_int32,
+            64: ctypes.c_int64,
+        }
+        return mapping[self.bitsize]
 
     def type(self):
-        return llvm.TypeFactory.make_float()
+        return llvm.TypeFactory.make_int(self.bitsize)
 
     def constant(self, val):
-        return llvm.ConstantFactory.make_real(self.type(), val)
+        if type(val) is not int:
+            raise TypeError(type(val))
+        else:
+            return llvm.ConstantFactory.make_int(self.type(), val)
 
     def cast(self, old, builder):
         if old.type == self:
             return old.value(builder)
+        elif isinstance(old.type, types.Bool):
+            return builder.icast(old.value(builder), self.type(), True)
         elif isinstance(old.type, types.GenericInt):
+            assert old.type.bitsize != self.bitsize
             val = old.value(builder)
-            return builder.sitofp(val, self.type())
+            return builder.icast(val, self.type(), self.signed)
         elif isinstance(old.type, types.GenericReal):
             val = old.value(builder)
-            return builder.fcast(val, self.type())
+            return builder.fptosi(val, self.type())
         else:
             print 'cast %s -> %s'%(old.type, self)
 
         assert False
 
+
+class LLVMRealBinOpMixin(object):
     def op_add(self, lhs, rhs, builder):
         return builder.fadd(lhs, rhs)
 
@@ -205,6 +185,34 @@ class LLVMBasicFloatMixin(object):
 
     def op_gte(self, lhs, rhs, builder):
         return builder.fcmp(llvm.FCMP_OGE, lhs, rhs)
+
+class LLVMBasicFloatMixin(LLVMRealBinOpMixin):
+
+    def argument_adaptor(self, val):
+        return val
+
+    def ctype(self):
+        return ctypes.c_float
+
+    def type(self):
+        return llvm.TypeFactory.make_float()
+
+    def constant(self, val):
+        return llvm.ConstantFactory.make_real(self.type(), val)
+
+    def cast(self, old, builder):
+        if old.type == self:
+            return old.value(builder)
+        elif isinstance(old.type, types.GenericInt):
+            val = old.value(builder)
+            return builder.sitofp(val, self.type())
+        elif isinstance(old.type, types.GenericReal):
+            val = old.value(builder)
+            return builder.fcast(val, self.type())
+        else:
+            print 'cast %s -> %s'%(old.type, self)
+
+        assert False
 
 class LLVMBasicDoubleMixin(LLVMBasicFloatMixin):
     def ctype(self):

@@ -516,6 +516,7 @@ class Builder(_object):
     def phi(self, *args): return _llvm_wrapper.Builder_phi(self, *args)
     def bitwise_and(self, *args): return _llvm_wrapper.Builder_bitwise_and(self, *args)
     def bitwise_or(self, *args): return _llvm_wrapper.Builder_bitwise_or(self, *args)
+    def bitwise_neg(self, *args): return _llvm_wrapper.Builder_bitwise_neg(self, *args)
     def add(self, *args): return _llvm_wrapper.Builder_add(self, *args)
     def sub(self, *args): return _llvm_wrapper.Builder_sub(self, *args)
     def mul(self, *args): return _llvm_wrapper.Builder_mul(self, *args)

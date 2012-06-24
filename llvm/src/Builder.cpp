@@ -39,6 +39,9 @@ Value * Builder::bitwise_or(Value * lhs, Value * rhs, const char * name){
     return builder_.CreateOr(lhs, rhs, name);
 }
 
+Value * Builder::bitwise_neg(Value * value, const char * name){
+    return builder_.CreateNeg(value, name);
+}
 
 // integer operations
 

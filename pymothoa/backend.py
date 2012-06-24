@@ -405,3 +405,12 @@ This error should have been caught by the Python parser.''')
     def generate_boolop(self, op_class, lhs, rhs):
         raise NotImplementedError
 
+    def visit_UnaryOp(self, node):
+        operand = self.visit(node.operand)
+        if isinstance(node.op, ast.Not):
+            return self.generate_not(operand)
+        raise NotImplementedError(ast.dump(node))
+
+    def generate_not(self, operand):
+        raise NotImplementedError
+

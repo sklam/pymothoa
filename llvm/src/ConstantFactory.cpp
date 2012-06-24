@@ -14,4 +14,6 @@ Value * ConstantFactory::make_real(Type * ty, double val){
     return ConstantFP::get(ty, val);
 }
 
-
+Value * ConstantFactory::make_undef(Type * ty){
+    return UndefValue::get(ty);
+}

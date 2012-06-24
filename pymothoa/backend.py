@@ -4,7 +4,7 @@ import ast
 import types, dialect
 
 from pymothoa.util.descriptor import Descriptor, instanceof
-from compiler_errors import CompilerError, InternalError
+from compiler_errors import *
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +35,9 @@ class CodeGenerationBase(ast.NodeVisitor):
             try:
                 self.__nodes.append(node) # push current node
                 return fn(node)
+            except TypeError as e:
+                logger.exception(e)
+                raise InternalError(node, str(e))
             except (NotImplementedError, AssertionError) as e:
                 logger.exception(e)
                 raise InternalError(node, str(e))
@@ -97,6 +100,13 @@ This error should have been caught by the Python parser.''')
 
         elif fn is types.Vector:
             # Defining a vector type
+            if len(node.args) != 2:
+                raise InvalidUseOfConstruct(
+                        node,
+                        '''Vector constructor takes two arguments.
+Hint: Vector(ElemType, ElemCount)'''
+                      )
+
             if node.keywords or node.starargs or node.kwargs:
                 raise InvalidUseOfConstruct(
                             node,
@@ -105,6 +115,19 @@ This error should have been caught by the Python parser.''')
 
             elemty = self.visit(node.args[0])
             elemct = self.constant_number(node.args[1])
+
+            if type(elemty) is not type or not issubclass(elemty, types.Type):
+                raise InvalidUseOfConstruct(
+                            node,
+                            'Expecting a type for element type of vector.'
+                      )
+
+            if elemct <= 0:
+                raise InvalidUseOfConstruct(
+                          node,
+                          'Vector type must have at least one element.'
+                      )
+
 
             newclsname = '__CustomVector__%s%d'%(elemty.__name__, elemct)
             newcls = type(newclsname, (types.GenericVector,), {
@@ -130,12 +153,15 @@ This error should have been caught by the Python parser.''')
     def construct_var(self, fn, node):
         if fn is not dialect.var:
             raise AssertionError('Implementation error.')
+
         if node.args:
             raise InvalidUseOfConstruct(
                     node,
-                    'Construct "var" must contain at least one keyword arguments in the form of "var ( name=type )".'
-                )
-        # For each defined variable
+                    ('Construct "var" must contain at least one'
+                    ' keyword arguments in the form of "var ( name=type )".'),
+                  )
+
+        # for each defined variable
         for kw in node.keywords:
             ty = self.visit(kw.value) # type
             name = kw.arg             # name
@@ -241,8 +267,8 @@ This error should have been caught by the Python parser.''')
                 return self.generate_array_load_elem(ptr, idx)
             elif isinstance(node.ctx, ast.Store): # store
                 return self.generate_array_store_elem(ptr, idx)
-        # unreachable
-        raise AssertionError('Unreachable')
+        else: # Unsupported types
+            raise InvalidSubscriptError(node)
 
 
     def generate_vector_load_elem(self, ptr, idx):

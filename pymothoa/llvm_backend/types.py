@@ -52,7 +52,6 @@ class LLVMType(object):
             else:
                 raise TypeError(datatype)
 
-
 class LLVMVoid(types.Void):
     def ctype(self):
         return None
@@ -114,6 +113,10 @@ class LLVMBasicIntMixin(object):
     def __eq__(self, other):
         return type(self) is type(other)
 
+    def __ne__(self, other):
+        return not (self==other)
+
+
 class LLVMBasicFloatMixin(object):
 
     def argument_adaptor(self, val):
@@ -160,6 +163,8 @@ class LLVMBasicFloatMixin(object):
     def __eq__(self, other):
         return type(self) is type(other)
 
+    def __ne__(self, other):
+        return not (self==other)
 
 class LLVMBasicDoubleMixin(LLVMBasicFloatMixin):
     def ctype(self):
@@ -205,12 +210,25 @@ class LLVMVector(types.GenericVector):
         return llvm.TypeFactory.make_vector(self.elemtype.type(), self.elemcount)
 
     def cast(self, old, builder):
-        assert isinstance(old.type, LLVMVector)
-        assert old.type.elemtype == self.elemtype
+        from values import LLVMTempValue, LLVMConstant
+        if not isinstance(old.type, LLVMVector): # from scalar to vector
+            elem_casted = self.elemtype.cast(old, builder)
+            vector = llvm.ConstantFactory.make_undef(self.type())
+            for i in range(self.elemcount):
+                idx = LLVMConstant(LLVMType(types.Int), i).value(builder)
+                vector = builder.insert_element(vector, elem_casted, idx)
+            return vector
+        if old.type.elemtype != self.elemtype:
+            raise TypeError('Invalid casting')
+
         return old.value(builder)
 
     def coerce(self, other):
-        assert isinstance(other, LLVMVector)
-        assert other.elemtype == self.elemtype
-        return self
+        if not isinstance(other, LLVMVector): # other is of scalar type
+            # then, try to promote it to a vector type
+            return self
 
+        if other.elemtype != self.elemtype:
+            raise TypeError('Invalid casting')
+
+        return self

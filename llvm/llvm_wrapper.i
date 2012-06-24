@@ -64,6 +64,7 @@ public:
     static llvm::Value * make_int(llvm::Type * ty, unsigned long long val);
     static llvm::Value * make_int_signed(llvm::Type * ty, unsigned long long val);
     static llvm::Value * make_real(llvm::Type * ty, double val);
+    static llvm::Value * make_undef(llvm::Type * ty);
 };
 
 
@@ -186,15 +187,16 @@ public:
 
     void cond_branch(llvm::Value * Cond, llvm::BasicBlock * bb_true, llvm::BasicBlock * bb_false);
 
+    llvm::Value * call(FunctionAdaptor func, std::vector<llvm::Value*> args, const char * name="");
+
+    void unreachable();
+
     llvm::Value * alloc(llvm::Type * ty, const char * name="");
 
     llvm::Value * load(llvm::Value * ptr, const char * name="");
 
     llvm::Value * store(llvm::Value * val, llvm::Value * ptr);
 
-    llvm::Value * call(FunctionAdaptor func, std::vector<llvm::Value*> args, const char * name="");
-
-    void unreachable();
 
     // pointer
 

@@ -373,6 +373,8 @@ class ConstantFactory(_object):
     if _newclass:make_int_signed = staticmethod(_llvm_wrapper.ConstantFactory_make_int_signed)
     __swig_getmethods__["make_real"] = lambda x: _llvm_wrapper.ConstantFactory_make_real
     if _newclass:make_real = staticmethod(_llvm_wrapper.ConstantFactory_make_real)
+    __swig_getmethods__["make_undef"] = lambda x: _llvm_wrapper.ConstantFactory_make_undef
+    if _newclass:make_undef = staticmethod(_llvm_wrapper.ConstantFactory_make_undef)
     def __init__(self): 
         this = _llvm_wrapper.new_ConstantFactory()
         try: self.this.append(this)
@@ -393,6 +395,10 @@ ConstantFactory_make_int_signed = _llvm_wrapper.ConstantFactory_make_int_signed
 def ConstantFactory_make_real(*args):
   return _llvm_wrapper.ConstantFactory_make_real(*args)
 ConstantFactory_make_real = _llvm_wrapper.ConstantFactory_make_real
+
+def ConstantFactory_make_undef(*args):
+  return _llvm_wrapper.ConstantFactory_make_undef(*args)
+ConstantFactory_make_undef = _llvm_wrapper.ConstantFactory_make_undef
 
 class FunctionAdaptor(_object):
     __swig_setmethods__ = {}
@@ -481,11 +487,11 @@ class Builder(_object):
     def ret_void(self): return _llvm_wrapper.Builder_ret_void(self)
     def branch(self, *args): return _llvm_wrapper.Builder_branch(self, *args)
     def cond_branch(self, *args): return _llvm_wrapper.Builder_cond_branch(self, *args)
+    def call(self, *args): return _llvm_wrapper.Builder_call(self, *args)
+    def unreachable(self): return _llvm_wrapper.Builder_unreachable(self)
     def alloc(self, *args): return _llvm_wrapper.Builder_alloc(self, *args)
     def load(self, *args): return _llvm_wrapper.Builder_load(self, *args)
     def store(self, *args): return _llvm_wrapper.Builder_store(self, *args)
-    def call(self, *args): return _llvm_wrapper.Builder_call(self, *args)
-    def unreachable(self): return _llvm_wrapper.Builder_unreachable(self)
     def gep(self, *args): return _llvm_wrapper.Builder_gep(self, *args)
     def gep2(self, *args): return _llvm_wrapper.Builder_gep2(self, *args)
     def extract_element(self, *args): return _llvm_wrapper.Builder_extract_element(self, *args)

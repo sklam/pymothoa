@@ -88,8 +88,6 @@ class LLVMCodeGenerator(CodeGenerationBase):
 
         return self._call_function(fn, args, retty, argtys)
 
-
-
     def generate_assign(self, from_value, to_target):
         casted = to_target.type.cast(from_value, self.builder)
         self.builder.store(casted, to_target.pointer)
@@ -103,6 +101,11 @@ class LLVMCodeGenerator(CodeGenerationBase):
         return fn(lval, rval, self.builder)
 
     def generate_return(self, value):
+        if isinstance(self.retty, LLVMVoid):
+            raise InvalidReturnError(
+                    self.current_node,
+                    'This function does not return any value.'
+                  )
         casted = self.retty.cast(value, self.builder)
         self.builder.ret(casted)
 

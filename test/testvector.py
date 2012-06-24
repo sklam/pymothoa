@@ -90,6 +90,12 @@ def test_vector_py(A, N):
 
     return accX * accY * accZ * accW
 
+@function(ret=Int, args=[Int])
+def test_vector_scalar(A):
+    var ( vec = Vector(Int, 4) )
+    vec = A
+    return vec[0]+vec[1]+vec[2]+vec[3]
+
 # -------------------------------------------------------------------
 
 import unittest
@@ -147,13 +153,19 @@ class Test(unittest.TestCase):
             print py_result, jit_result
         self.assertTrue(error < 0.01/100)
 
+    def test_vector_scalar(self):
+        result = test_vector_scalar(123)
+        self.assertTrue( result == 123 * 4 )
+        result = test_vector_scalar(321)
+        self.assertTrue( result == 321 * 4 )
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Test)
     unittest.TextTestRunner(verbosity=2).run(suite)
 
     if True:
         print 'Assembly'.center(80, '=')
-        print test_vector_double.assembly()
+        print test_vector_scalar.assembly()
         print 'End Assembly'.center(80, '=')
 
     benchmark_summary()

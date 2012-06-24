@@ -41,6 +41,12 @@ class InvalidUseOfConstruct(CompilerError):
 class MissingReturnError(CompilerError):
     message = 'Function missing return statement.'
 
+class InvalidReturnError(CompilerError):
+    message = 'Invalid use of return statement.'
+
+class InvalidSubscriptError(CompilerError):
+    message = 'Type does not support subscripting.'
+
 class InternalError(CompilerError):
     message = 'Internal Error.'
 
@@ -73,6 +79,7 @@ def wrap_by_function(e, func):
                     corrsource[1]+e.line-1,
                     e.col+1
                 )
+
     corrptr = '-'*(e.col) + '^'
 
     template = '\n'.join([

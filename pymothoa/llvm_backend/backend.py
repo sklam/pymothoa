@@ -125,8 +125,11 @@ class LLVMCodeGenerator(CodeGenerationBase):
         return LLVMConstant(LLVMType(types.Double), value)
 
     def generate_declare(self, name, ty):
-        realty = LLVMType(ty)
-        return LLVMVariable(name, realty, self.builder)
+        if issubclass(ty, types.GenericBoundedArray): # array
+            return LLVMArrayVariable(name, LLVMType(ty), ty.elemcount.value(self.builder), self.builder)
+        else: # other types
+            realty = LLVMType(ty)
+            return LLVMVariable(name, realty, self.builder)
 
     def _call_function(self, fn, args, retty, argtys):
         arg_values = map(lambda X: LLVMTempValue(X.value(self.builder), X.type), args)

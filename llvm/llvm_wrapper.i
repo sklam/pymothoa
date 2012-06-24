@@ -202,6 +202,8 @@ public:
 
     llvm::Value * alloc(llvm::Type * ty, const char * name="");
 
+    llvm::Value * alloc_array(llvm::Type * ty, llvm::Value * ct, const char * name="");
+
     llvm::Value * load(llvm::Value * ptr, const char * name="");
 
     llvm::Value * store(llvm::Value * val, llvm::Value * ptr);

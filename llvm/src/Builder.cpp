@@ -136,6 +136,10 @@ Value * Builder::alloc(llvm::Type * ty, const char * name){
     return builder_.CreateAlloca(ty, 0, name);
 }
 
+Value * Builder::alloc_array(llvm::Type * ty, Value * ct, const char * name){
+    return builder_.CreateAlloca(ty, ct, name);
+}
+
 Value * Builder::load(Value * ptr, const char * name){
     return builder_.CreateLoad(ptr, name);
 }

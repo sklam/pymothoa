@@ -97,70 +97,6 @@ This error should have been caught by the Python parser.''')
                         )
             else:
                 return handler(fn, node)
-
-        elif fn is types.Array:
-            # Defining a array type
-            if len(node.args) != 2:
-                raise InvalidUseOfConstruct(
-                        node,
-                        ('Array constructor takes two arguments.\n'
-                         'Hint: Array(ElemType, ElemCount)')
-                      )
-            if node.keywords or node.starargs or node.kwargs:
-                raise InvalidUseOfConstruct(
-                            node,
-                            'Cannot use keyword or star arguments.'
-                      )
-
-            elemty = self.visit(node.args[0])
-            elemct = self.constant_number(node.args[1])
-
-            if type(elemty) is not type or not issubclass(elemty, types.Type):
-                raise InvalidUseOfConstruct(
-                            node,
-                            'Expecting a type for element type of vector.'
-                      )
-            raise NotImplementedError
-        elif fn is types.Vector:
-            # Defining a vector type
-            if len(node.args) != 2:
-                raise InvalidUseOfConstruct(
-                        node,
-                        ('Vector constructor takes two arguments.\n'
-                         'Hint: Vector(ElemType, ElemCount)')
-                      )
-
-            if node.keywords or node.starargs or node.kwargs:
-                raise InvalidUseOfConstruct(
-                            node,
-                            'Cannot use keyword or star arguments.'
-                        )
-
-            elemty = self.visit(node.args[0])
-            elemct = self.constant_number(node.args[1])
-
-            if type(elemty) is not type or not issubclass(elemty, types.Type):
-                raise InvalidUseOfConstruct(
-                            node,
-                            'Expecting a type for element type of vector.'
-                      )
-
-            if elemct <= 0:
-                raise InvalidUseOfConstruct(
-                          node,
-                          'Vector type must have at least one element.'
-                      )
-
-
-            newclsname = '__CustomVector__%s%d'%(elemty.__name__, elemct)
-            newcls = type(newclsname, (types.GenericVector,), {
-                # List all class members of the new vector type.
-                'elemtype' : elemty,
-                'elemcount': elemct,
-            })
-
-            return newcls # return the new vector type class object
-
         else:# is a real function call
             if node.keywords or node.starargs or node.kwargs:
                 raise InvalidCall(node, 'Cannot use keyword or star arguments.')
@@ -186,14 +122,104 @@ This error should have been caught by the Python parser.''')
 
         # for each defined variable
         for kw in node.keywords:
-            ty = self.visit(kw.value) # type
+            #ty = self.visit(kw.value) # type
+            ty = self.extract_type(kw.value)
             name = kw.arg             # name
             if name in self.symbols:
                 raise VariableRedeclarationError(kw.value)
-
+            variable = self.generate_declare(name, ty)
             # store new variable to symbol table
-            self.symbols[name] = self.generate_declare(name, ty)
+            self.symbols[name] = variable
         return # return None
+
+    def extract_type(self, node):
+        if isinstance(node, ast.Name): # simple symbols
+            if not isinstance(node.ctx, ast.Load):
+                raise InternalError(node, 'Only load context is possible.')
+            return self.symbols[node.id]
+        elif isinstance(node, ast.Call): # complex type
+            fn = self.visit(node.func)
+            if not issubclass(fn, types.DummyType):
+                raise AssertionError('Not a dummy type.')
+            if fn is types.Vector:
+                # Defining a vector type
+                if len(node.args) != 2:
+                    raise InvalidUseOfConstruct(
+                            node,
+                            ('Vector constructor takes two arguments.\n'
+                             'Hint: Vector(ElemType, ElemCount)')
+                          )
+
+                if node.keywords or node.starargs or node.kwargs:
+                    raise InvalidUseOfConstruct(
+                                node,
+                                'Cannot use keyword or star arguments.'
+                            )
+
+                elemty = self.visit(node.args[0])
+                elemct = self.constant_number(node.args[1])
+
+                if type(elemty) is not type or not issubclass(elemty, types.Type):
+                    raise InvalidUseOfConstruct(
+                                node,
+                                'Expecting a type for element type of vector.'
+                          )
+
+                if elemct <= 0:
+                    raise InvalidUseOfConstruct(
+                              node,
+                              'Vector type must have at least one element.'
+                          )
+
+
+                newclsname = '__CustomVector__%s%d'%(elemty.__name__, elemct)
+                newcls = type(newclsname, (types.GenericVector,), {
+                    # List all class members of the new vector type.
+                    'elemtype' : elemty,
+                    'elemcount': elemct,
+                })
+
+                return newcls # return the new vector type class object
+            elif fn is types.Array:
+                # Defining an Array type
+                if len(node.args) != 2:
+                    raise InvalidUseOfConstruct(
+                            node,
+                            ('Array constructor takes two arguments.\n'
+                             'Hint: Array(ElemType, ElemCount)')
+                          )
+
+                if node.keywords or node.starargs or node.kwargs:
+                    raise InvalidUseOfConstruct(
+                                node,
+                                'Cannot use keyword or star arguments.'
+                            )
+
+                elemty = self.visit(node.args[0])
+                elemct = self.visit(node.args[1]) # accept constants & variables
+
+                if type(elemty) is not type or not issubclass(elemty, types.Type):
+                    raise InvalidUseOfConstruct(
+                                node,
+                                'Expecting a type for element type of array.'
+                          )
+
+                if elemct <= 0:
+                    raise InvalidUseOfConstruct(
+                              node,
+                              'array type must have at least one element.'
+                          )
+
+                newclsname = '__CustomArray__%s%s'%(elemty.__name__, elemct)
+                newcls = type(newclsname, (types.GenericBoundedArray,), {
+                    # List all class members of the new array type.
+                    'elemtype' : elemty,
+                    'elemcount': elemct,
+                })
+
+                return newcls # return the new array type class object
+
+        raise InternalError(node, 'Cannot resolve type.')
 
     def visit_Expr(self, node):
         self.generic_visit(node)

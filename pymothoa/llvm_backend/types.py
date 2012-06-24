@@ -2,7 +2,9 @@ import ctypes
 
 from pymothoa.util.descriptor import Descriptor, instanceof
 from pymothoa import types
+
 import llvm # binding
+import values
 
 _array_type_code_to_ctype = {
     'c': ctypes.c_char,
@@ -34,7 +36,9 @@ class LLVMType(object):
         try:
             return object.__new__(TYPE_MAP[datatype])
         except KeyError:
-            if isinstance(datatype, types.Array): # Unbounded array type
+            if (isinstance(datatype, types.Array)
+                or (type(datatype) is type
+                    and issubclass(datatype, types.GenericBoundedArray))): # Unbounded array type
                 elemtype = datatype.elemtype
                 obj = object.__new__(LLVMUnboundedArray)
                 obj.elemtype = LLVMType(elemtype)
@@ -265,7 +269,6 @@ class LLVMUnboundedArray(types.GenericUnboundedArray):
         ctype = self.elemtype.ctype()
         argtype = ctype*len(val)
         return argtype(*val)
-
 
 class LLVMVector(types.GenericVector):
     elemtype = Descriptor(constant=True, constrains=instanceof(types.BuiltinType))

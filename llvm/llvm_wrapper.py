@@ -540,6 +540,7 @@ class Builder(_object):
     def call(self, *args): return _llvm_wrapper.Builder_call(self, *args)
     def unreachable(self): return _llvm_wrapper.Builder_unreachable(self)
     def alloc(self, *args): return _llvm_wrapper.Builder_alloc(self, *args)
+    def alloc_array(self, *args): return _llvm_wrapper.Builder_alloc_array(self, *args)
     def load(self, *args): return _llvm_wrapper.Builder_load(self, *args)
     def store(self, *args): return _llvm_wrapper.Builder_store(self, *args)
     def gep(self, *args): return _llvm_wrapper.Builder_gep(self, *args)

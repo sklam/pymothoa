@@ -73,13 +73,23 @@ class AggregateType(Type):
 class GenericUnboundedArray(AggregateType):
     pass
 
+class GenericBoundedArray(AggregateType):
+    pass
+
 class GenericVector(Type):
     pass
 
-def Vector(ty, ct):
+
+class DummyType(Type):
+    '''Dummy type class for allowing the backend to recognize special type constructions.
+    '''
     pass
 
-class Array(object):
+class Vector(DummyType):
+    def __init__(ty, ct):
+        pass
+
+class Array(DummyType):
     __slots__ = 'elemtype'
     def __init__(self, elemtype, *ignored):
         '''Note: elemcount is ignored when using in the Python scope.

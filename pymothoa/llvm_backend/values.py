@@ -1,4 +1,5 @@
 import llvm
+from pymothoa import types
 from pymothoa.util.descriptor import Descriptor, instanceof
 
 class LLVMValue(object):
@@ -32,6 +33,18 @@ class LLVMVariable(LLVMValue):
 
     def value(self, builder):
         return builder.load(self.pointer)
+
+class LLVMArrayVariable(LLVMVariable):
+    def __init__(self, name, ty, elemct, builder):
+        '''Overides parent ctor.
+        '''
+        self.type = ty
+        self.pointer = builder.alloc_array(ty.elemtype.type(), elemct)
+
+    def value(self, builder):
+        from types import *
+        zero = LLVMConstant(LLVMType(types.Int), 0).value(builder)
+        return builder.gep(self.pointer, zero)
 
 class LLVMConstant(LLVMValue):
     constant = Descriptor(constant=True)

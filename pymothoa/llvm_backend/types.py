@@ -1,7 +1,6 @@
 import ctypes
 
 from pymothoa.util.descriptor import Descriptor, instanceof
-
 from pymothoa import types
 import llvm # binding
 
@@ -24,6 +23,7 @@ class LLVMType(object):
     def __new__(cls, datatype):
         TYPE_MAP = {
             types.Void      : LLVMVoid,
+            types.Bool      : LLVMBool,
             types.Int8      : LLVMInt8,
             types.Int16     : LLVMInt16,
             types.Int32     : LLVMInt32,
@@ -69,6 +69,18 @@ class LLVMVoid(types.Void):
 
     def type(self):
         return llvm.TypeFactory.make_void()
+
+class LLVMBool(types.Bool):
+    def ctype(self):
+        raise NotImplementedError
+
+    def type(self):
+        return llvm.TypeFactory.make_int(1) # 1-bit integer
+
+    def cast(self, old, builder):
+        if old.type == self: return old.value(builder)
+        else: raise TypeError('Cannot cast to boolean.'+'%s %s'%(old.type, self))
+
 
 class LLVMBasicIntMixin(object):
 
@@ -120,15 +132,20 @@ class LLVMBasicIntMixin(object):
     def op_div(self, lhs, rhs, builder):
         return builder.sdiv(lhs, rhs)
 
+    def op_eq(self, lhs, rhs, builder):
+        return builder.icmp(llvm.ICMP_EQ, lhs, rhs)
+
+    def op_lt(self, lhs, rhs, builder):
+        return builder.icmp(llvm.ICMP_SLT, lhs, rhs)
+
     def op_lte(self, lhs, rhs, builder):
         return builder.icmp(llvm.ICMP_SLE, lhs, rhs)
 
-    def __eq__(self, other):
-        return type(self) is type(other)
+    def op_gt(self, lhs, rhs, builder):
+        return builder.icmp(llvm.ICMP_SGT, lhs, rhs)
 
-    def __ne__(self, other):
-        return not (self==other)
-
+    def op_gte(self, lhs, rhs, builder):
+        return builder.icmp(llvm.ICMP_SGE, lhs, rhs)
 
 class LLVMBasicFloatMixin(object):
 
@@ -170,14 +187,20 @@ class LLVMBasicFloatMixin(object):
     def op_div(self, lhs, rhs, builder):
         return builder.fdiv(lhs, rhs)
 
+    def op_eq(self, lhs, rhs, builder):
+        return builder.fcmp(llvm.FCMP_OEQ, lhs, rhs)
+
+    def op_lt(self, lhs, rhs, builder):
+        return builder.fcmp(llvm.FCMP_OLT, lhs, rhs)
+
     def op_lte(self, lhs, rhs, builder):
         return builder.fcmp(llvm.FCMP_OLE, lhs, rhs)
 
-    def __eq__(self, other):
-        return type(self) is type(other)
+    def op_gt(self, lhs, rhs, builder):
+        return builder.fcmp(llvm.FCMP_OGT, lhs, rhs)
 
-    def __ne__(self, other):
-        return not (self==other)
+    def op_gte(self, lhs, rhs, builder):
+        return builder.fcmp(llvm.FCMP_OGE, lhs, rhs)
 
 class LLVMBasicDoubleMixin(LLVMBasicFloatMixin):
     def ctype(self):

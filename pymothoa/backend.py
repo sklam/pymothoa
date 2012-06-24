@@ -331,6 +331,7 @@ This error should have been caught by the Python parser.''')
         test = self.visit(node.test)
         iftrue_body = node.body
         orelse_body = node.orelse
+        if len(orelse_body) not in [0,1]: raise AssertionError
         self.generate_if(test, iftrue_body, orelse_body)
 
     def visit_For(self, node):
@@ -370,3 +371,11 @@ This error should have been caught by the Python parser.''')
 
         loopbody = node.body
         self.generate_for_range(counter_ptr, initcount, endcount, loopbody)
+
+    def visit_BoolOp(self, node):
+        if len(node.values)!=2: raise AssertionError
+        return self.generate_boolop(node.op, node.values[0], node.values[1])
+
+    def generate_boolop(self, op_class, lhs, rhs):
+        raise NotImplementedError
+

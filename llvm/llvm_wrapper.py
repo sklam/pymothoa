@@ -284,6 +284,53 @@ class ArrayValuePtr(_object):
 ArrayValuePtr_swigregister = _llvm_wrapper.ArrayValuePtr_swigregister
 ArrayValuePtr_swigregister(ArrayValuePtr)
 
+class ArrayBBPtr(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, ArrayBBPtr, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, ArrayBBPtr, name)
+    __repr__ = _swig_repr
+    def iterator(self): return _llvm_wrapper.ArrayBBPtr_iterator(self)
+    def __iter__(self): return self.iterator()
+    def __nonzero__(self): return _llvm_wrapper.ArrayBBPtr___nonzero__(self)
+    def __bool__(self): return _llvm_wrapper.ArrayBBPtr___bool__(self)
+    def __len__(self): return _llvm_wrapper.ArrayBBPtr___len__(self)
+    def pop(self): return _llvm_wrapper.ArrayBBPtr_pop(self)
+    def __getslice__(self, *args): return _llvm_wrapper.ArrayBBPtr___getslice__(self, *args)
+    def __setslice__(self, *args): return _llvm_wrapper.ArrayBBPtr___setslice__(self, *args)
+    def __delslice__(self, *args): return _llvm_wrapper.ArrayBBPtr___delslice__(self, *args)
+    def __delitem__(self, *args): return _llvm_wrapper.ArrayBBPtr___delitem__(self, *args)
+    def __getitem__(self, *args): return _llvm_wrapper.ArrayBBPtr___getitem__(self, *args)
+    def __setitem__(self, *args): return _llvm_wrapper.ArrayBBPtr___setitem__(self, *args)
+    def append(self, *args): return _llvm_wrapper.ArrayBBPtr_append(self, *args)
+    def empty(self): return _llvm_wrapper.ArrayBBPtr_empty(self)
+    def size(self): return _llvm_wrapper.ArrayBBPtr_size(self)
+    def clear(self): return _llvm_wrapper.ArrayBBPtr_clear(self)
+    def swap(self, *args): return _llvm_wrapper.ArrayBBPtr_swap(self, *args)
+    def get_allocator(self): return _llvm_wrapper.ArrayBBPtr_get_allocator(self)
+    def begin(self): return _llvm_wrapper.ArrayBBPtr_begin(self)
+    def end(self): return _llvm_wrapper.ArrayBBPtr_end(self)
+    def rbegin(self): return _llvm_wrapper.ArrayBBPtr_rbegin(self)
+    def rend(self): return _llvm_wrapper.ArrayBBPtr_rend(self)
+    def pop_back(self): return _llvm_wrapper.ArrayBBPtr_pop_back(self)
+    def erase(self, *args): return _llvm_wrapper.ArrayBBPtr_erase(self, *args)
+    def __init__(self, *args): 
+        this = _llvm_wrapper.new_ArrayBBPtr(*args)
+        try: self.this.append(this)
+        except: self.this = this
+    def push_back(self, *args): return _llvm_wrapper.ArrayBBPtr_push_back(self, *args)
+    def front(self): return _llvm_wrapper.ArrayBBPtr_front(self)
+    def back(self): return _llvm_wrapper.ArrayBBPtr_back(self)
+    def assign(self, *args): return _llvm_wrapper.ArrayBBPtr_assign(self, *args)
+    def resize(self, *args): return _llvm_wrapper.ArrayBBPtr_resize(self, *args)
+    def insert(self, *args): return _llvm_wrapper.ArrayBBPtr_insert(self, *args)
+    def reserve(self, *args): return _llvm_wrapper.ArrayBBPtr_reserve(self, *args)
+    def capacity(self): return _llvm_wrapper.ArrayBBPtr_capacity(self)
+    __swig_destroy__ = _llvm_wrapper.delete_ArrayBBPtr
+    __del__ = lambda self : None;
+ArrayBBPtr_swigregister = _llvm_wrapper.ArrayBBPtr_swigregister
+ArrayBBPtr_swigregister(ArrayBBPtr)
+
 ICMP_EQ = _llvm_wrapper.ICMP_EQ
 ICMP_NE = _llvm_wrapper.ICMP_NE
 ICMP_UGT = _llvm_wrapper.ICMP_UGT
@@ -466,6 +513,9 @@ class Builder(_object):
         except: self.this = this
     def insert_at(self, *args): return _llvm_wrapper.Builder_insert_at(self, *args)
     def get_basic_block(self): return _llvm_wrapper.Builder_get_basic_block(self)
+    def phi(self, *args): return _llvm_wrapper.Builder_phi(self, *args)
+    def bitwise_and(self, *args): return _llvm_wrapper.Builder_bitwise_and(self, *args)
+    def bitwise_or(self, *args): return _llvm_wrapper.Builder_bitwise_or(self, *args)
     def add(self, *args): return _llvm_wrapper.Builder_add(self, *args)
     def sub(self, *args): return _llvm_wrapper.Builder_sub(self, *args)
     def mul(self, *args): return _llvm_wrapper.Builder_mul(self, *args)

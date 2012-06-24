@@ -98,6 +98,18 @@ def test_forloop(val, repeat):
     return val
 
 test_forloop_py = test_forloop.run_jit
+
+@function(ret=Int, args=[Int, Int])
+def test_ifelse(A, B):
+    if A == B:
+        return 1
+    elif A > B:
+        return 2
+    else:
+        return 3
+
+test_ifelse_py = test_ifelse.run_py
+
 # -------------------------------------------------------------------
 
 import unittest
@@ -215,6 +227,16 @@ class Test(unittest.TestCase):
 
         self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
 
+    def test_ifelse(self):
+        ARG = randint(1,10), randint(1,10)
+        with benchmark() as bm:
+            with bm.entry('Python'):
+                for _ in xrange(self.REP):
+                    py_result = test_ifelse_py(*ARG)
+            with bm.entry('JIT'):
+                for _ in xrange(self.REP):
+                    jit_result = test_ifelse(*ARG)
+        self.assertTrue(py_result == jit_result)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Test)

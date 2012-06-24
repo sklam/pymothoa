@@ -98,7 +98,8 @@ class LLVMCodeGenerator(CodeGenerationBase):
         lval = ty.cast(lhs, self.builder)
         rval = ty.cast(rhs, self.builder)
         fn = getattr(ty, 'op_%s'%op_class.__name__.lower())
-        return fn(lval, rval, self.builder)
+        pred = fn(lval, rval, self.builder)
+        return LLVMTempValue(pred, LLVMType(types.Bool))
 
     def generate_return(self, value):
         if isinstance(self.retty, LLVMVoid):
@@ -171,7 +172,8 @@ class LLVMCodeGenerator(CodeGenerationBase):
         bb_endif = self.new_basic_block('endif')
         is_endif_reachable = False
 
-        self.builder.cond_branch(test, bb_if, bb_else)
+        boolean = test.value(self.builder)
+        self.builder.cond_branch(boolean, bb_if, bb_else)
 
         # true branch
         self.builder.insert_at(bb_if)
@@ -229,3 +231,29 @@ class LLVMCodeGenerator(CodeGenerationBase):
 
         # exit
         self.builder.insert_at(bb_exit)
+
+    def generate_boolop(self, op_class, lhs, rhs):
+        bb_left = self.builder.get_basic_block()
+        boolty = LLVMType(types.Bool)
+
+        left = boolty.cast(self.visit(lhs), self.builder)
+
+        bb_right = self.new_basic_block('bool_right')
+        bb_result = self.new_basic_block('bool_result')
+
+        if isinstance(op_class, ast.And):
+            self.builder.cond_branch(left, bb_right, bb_result)
+        elif isinstance(op_class, ast.Or):
+            self.builder.cond_branch(left, bb_result, bb_right)
+        else:
+            raise AssertionError('Unknown Boolean operator')
+
+        self.builder.insert_at(bb_right)
+        right = boolty.cast(self.visit(rhs), self.builder)
+        self.builder.branch(bb_result)
+
+        self.builder.insert_at(bb_result)
+        pred = self.builder.phi(boolty.type(), [bb_left, bb_right], [left, right]);
+        return LLVMTempValue(pred, boolty)
+
+

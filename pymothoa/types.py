@@ -1,6 +1,12 @@
 class Type(object):
     __init__ = NotImplemented
 
+    def __eq__(self, other):
+        return type(self) is type(other)
+
+    def __ne__(self, other):
+        return not (self==other)
+
 class BuiltinType(Type):
     def coerce(self, other):
         '''Returns the type that has a higher rank.
@@ -15,6 +21,9 @@ class Void(BuiltinType):
 
 class GenericInt(BuiltinType):
     pass
+
+class Bool(BuiltinType):
+    rank = 5
 
 class Int8(GenericInt):
     rank = 10

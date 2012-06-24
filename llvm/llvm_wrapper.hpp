@@ -34,6 +34,7 @@
 %template (ArrayInt) std::vector<int>;
 %template (ArrayTypePtr) std::vector<llvm::Type*>;
 %template (ArrayValuePtr) std::vector<llvm::Value*>;
+%template (ArrayBBPtr) std::vector<llvm::BasicBlock*>;
 
 !swig-end*/
 
@@ -162,7 +163,15 @@ public:
      * Set inserter position at the end of the basic-block.
      */
     void insert_at(llvm::BasicBlock * bb);
+
     llvm::BasicBlock * get_basic_block() const;
+
+    llvm::Value * phi(llvm::Type * type, std::vector<llvm::BasicBlock*> in_blocks, std::vector<llvm::Value*> in_values, const char* name="");
+
+    // bitwise operations
+    llvm::Value * bitwise_and(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
+
+    llvm::Value * bitwise_or(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
 
     // integer operations
 

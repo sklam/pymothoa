@@ -14,7 +14,31 @@ llvm::BasicBlock * Builder::get_basic_block() const {
     return builder_.GetInsertBlock();
 }
 
+
 using llvm::Value;
+
+Value * Builder::phi(llvm::Type* type, std::vector<llvm::BasicBlock*> in_blocks, std::vector<Value*> in_values, const char* name){
+    using namespace llvm;
+    assert(in_blocks.size()==in_values.size());
+    const unsigned int N = in_blocks.size();
+    PHINode * node = builder_.CreatePHI(type, N, name);
+    for(unsigned int i=0; i<N; ++i){
+        node->addIncoming(in_values[i], in_blocks[i]);
+    }
+    return node;
+}
+
+
+// bitwise operations
+
+Value * Builder::bitwise_and(Value * lhs, Value * rhs, const char * name){
+    return builder_.CreateAnd(lhs, rhs, name);
+}
+
+Value * Builder::bitwise_or(Value * lhs, Value * rhs, const char * name){
+    return builder_.CreateOr(lhs, rhs, name);
+}
+
 
 // integer operations
 

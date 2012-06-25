@@ -32,9 +32,10 @@ void CreatePasses(){
     initializeTarget(registry);
 }
 
-JITEngine::JITEngine(std::vector<std::string> passes, bool killOnBadPass)
+llvm::ExecutionEngine * JITEngine::the_exec_engine_=0;
+
+JITEngine::JITEngine(std::string modname, std::vector<std::string> passes, bool killOnBadPass)
     : module_(0),
-      ee_(0),
       last_error_("no error")
 {
     // Reference: Kaleidoscope: Adding JIT and Optimizer Support
@@ -47,25 +48,29 @@ JITEngine::JITEngine(std::vector<std::string> passes, bool killOnBadPass)
 
     LLVMContext & Context = getGlobalContext();
 
-    module_ = new Module("default", Context);
+    module_ = new Module(modname, Context);
+    if (0==the_exec_engine_) {// First instance of JITEngine
 
-    // Create the JIT.  This takes ownership of the module.
-    std::string ErrStr;
+        // Create the JIT.  This takes ownership of the module.
+        std::string ErrStr;
 
-    EngineBuilder & engine_builder = EngineBuilder(module_).setErrorStr(&ErrStr);
-    engine_builder.setEngineKind(EngineKind::JIT); // force JIT
-    // engine_builder.setOptLevel(CodeGenOpt::Aggressive);
+        EngineBuilder & engine_builder = EngineBuilder(module_).setErrorStr(&ErrStr);
+        engine_builder.setEngineKind(EngineKind::JIT); // force JIT
+        // engine_builder.setOptLevel(CodeGenOpt::Aggressive);
 
-    ee_ = engine_builder.create();
+        the_exec_engine_ = engine_builder.create();
 
-    if (!ee_) {
-        std::cerr << "Could not create ExecutionEngine: " << ErrStr << '\n';
-        exit(1);    // Abort.
+        if (!the_exec_engine_) {
+            std::cerr << "Could not create ExecutionEngine: " << ErrStr << '\n';
+            exit(1);    // Abort.
+        }
+
+        the_exec_engine_->DisableLazyCompilation(); // No lazy compiling
+    } else {
+        // Simply add new module to the already existent execution-engine
+        the_exec_engine_->addModule(module_);
     }
 
-    ee_->DisableLazyCompilation(); // No lazy compiling
-
-    //fpm_ = new FunctionPassManager(module_);
     fpm_ = new PassManager;
 
     PassRegistry & registry = *PassRegistry::getPassRegistry();
@@ -78,13 +83,11 @@ JITEngine::JITEngine(std::vector<std::string> passes, bool killOnBadPass)
             if (killOnBadPass) exit(1);
         }
     }
-
-    //fpm_->doInitialization();
 }
 
 JITEngine::~JITEngine(){
-    delete ee_;
     delete fpm_;
+    // do not delete the_exec_engine_ which lives for the entire lifetime of the process.
     // do not delete module_ because it is owned by the execution engine.
 }
 
@@ -145,13 +148,12 @@ bool JITEngine::verify() const {
     return not llvm::verifyModule(*module_);
 }
 
-void JITEngine::optimize(FunctionAdaptor func){
-    //fpm_->run(*func.get_function());
+void JITEngine::optimize(){
     fpm_->run(*module_);
 }
 
 void * JITEngine::get_pointer_to_function(FunctionAdaptor fn){
-    return ee_->getPointerToFunction(fn.get_function());
+    return the_exec_engine_->getPointerToFunction(fn.get_function());
 }
 
 std::string JITEngine::dump_asm(FunctionAdaptor fn){
@@ -165,7 +167,7 @@ std::string JITEngine::dump_asm(FunctionAdaptor fn){
 
     FunctionPassManager fpm(module_);
 
-    fpm.add(new TargetData(*ee_->getTargetData()));
+    fpm.add(new TargetData(*the_exec_engine_->getTargetData()));
 
     if ( tm->addPassesToEmitFile(fpm, fso, TargetMachine::CGFT_AssemblyFile, true) ) {
         rso << "Not Supported\n";

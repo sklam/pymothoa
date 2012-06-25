@@ -1,7 +1,7 @@
 import logging
 #logging.basicConfig(level=logging.DEBUG)
 
-from pymothoa.compiler import function
+from pymothoa.jit import default_module, function
 from pymothoa.types import *
 from pymothoa.dialect import *
 
@@ -12,15 +12,16 @@ def test_loop_3arg(A, S):
         res += i
     return res
 
+default_module.optimize()
+#-------------------------------------------------------------------------------
 import unittest
 class Test(unittest.TestCase):
     def test_callee(self):
         N = 100
         for i in xrange(1, N):
             args = N, i
-            print args
             answer = test_loop_3arg(*args)
-            print answer
+            logging.debug('args = %s | answer = %s', args, answer)
             self.assertEqual(answer, sum(xrange(0, *args)))
 
 if __name__ == '__main__':

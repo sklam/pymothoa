@@ -1,4 +1,8 @@
-from pymothoa.llvm_backend.module import LLVMModuleManager
+'''
+Check if all the passes in USE_THESE_PASSES exist in the llvm.
+'''
+
+from pymothoa.jit import default_module
 
 USE_THESE_PASSES = '''
 targetlibinfo
@@ -143,8 +147,8 @@ class Test(unittest.TestCase):
 
         include_passes = filter(bool, map(do_strip, USE_THESE_PASSES.splitlines()))
 
-        manager = LLVMModuleManager()
-        passes = manager.jit_engine.dump_passes()
+        module = default_module.module
+        passes = module.jit_engine.dump_passes()
 
         mapping = dict(map(do_strip, line.split(':'))
                            for line in passes.splitlines())

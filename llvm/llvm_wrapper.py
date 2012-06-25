@@ -491,7 +491,7 @@ class JITEngine(_object):
     def make_function(self, *args): return _llvm_wrapper.JITEngine_make_function(self, *args)
     def last_error(self): return _llvm_wrapper.JITEngine_last_error(self)
     def verify(self): return _llvm_wrapper.JITEngine_verify(self)
-    def optimize(self, *args): return _llvm_wrapper.JITEngine_optimize(self, *args)
+    def optimize(self): return _llvm_wrapper.JITEngine_optimize(self)
     def get_pointer_to_function(self, *args): return _llvm_wrapper.JITEngine_get_pointer_to_function(self, *args)
     def dump_asm(self, *args): return _llvm_wrapper.JITEngine_dump_asm(self, *args)
     def start_multithreaded(self): return _llvm_wrapper.JITEngine_start_multithreaded(self)

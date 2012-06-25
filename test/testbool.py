@@ -1,7 +1,7 @@
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
-from pymothoa.compiler import function
+from pymothoa.jit import default_module, function
 from pymothoa.types import *
 from pymothoa.dialect import *
 
@@ -29,6 +29,8 @@ def test_bool_gte(A, B):
 def test_bool_not(A):
     return not A
 
+default_module.optimize()
+#-------------------------------------------------------------------------------
 import unittest
 from random import random, randint
 

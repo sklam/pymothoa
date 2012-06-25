@@ -87,7 +87,7 @@ private:
 
 class JITEngine{
 public:
-    JITEngine(std::vector<std::string> passes, bool killOnBadPass=false);
+    JITEngine(std::string modname, std::vector<std::string> passes, bool killOnBadPass=false);
     ~JITEngine();
 
     std::string dump();
@@ -102,9 +102,17 @@ public:
                                   llvm::Type *result,
                                   std::vector<llvm::Type*> params);
     const char * last_error() const;
+    /**
+     * Verify the module.
+     */
     bool verify() const;
-    void optimize(FunctionAdaptor func);
+    /**
+     * Optimize the module.
+     */
+    void optimize();
+
     void * get_pointer_to_function(FunctionAdaptor fn);
+
     std::string dump_asm(FunctionAdaptor fn);
 
     // Are these 3 functions necessary? Can I just use lock in ExecutionEngine?
@@ -121,12 +129,13 @@ private:
     JITEngine & operator = (const JITEngine&);   //no impl
 private:
     llvm::Module * module_;
-    llvm::ExecutionEngine * ee_;
+    static llvm::ExecutionEngine * the_exec_engine_; //class-member singleton
     //llvm::FunctionPassManager * fpm_;
     llvm::PassManager * fpm_;
 
     std::string last_error_;
 };
+
 
 
 class Builder {

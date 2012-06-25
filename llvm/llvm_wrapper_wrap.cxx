@@ -16069,30 +16069,41 @@ SWIGINTERN PyObject *FunctionAdaptor_swigregister(PyObject *SWIGUNUSEDPARM(self)
 
 SWIGINTERN PyObject *_wrap_new_JITEngine__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
-  std::vector< std::string,std::allocator< std::string > > arg1 ;
-  bool arg2 ;
-  bool val2 ;
-  int ecode2 = 0 ;
+  std::string arg1 ;
+  std::vector< std::string,std::allocator< std::string > > arg2 ;
+  bool arg3 ;
+  bool val3 ;
+  int ecode3 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
   JITEngine *result = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OO:new_JITEngine",&obj0,&obj1)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOO:new_JITEngine",&obj0,&obj1,&obj2)) SWIG_fail;
   {
-    std::vector<std::string,std::allocator< std::string > > *ptr = (std::vector<std::string,std::allocator< std::string > > *)0;
-    int res = swig::asptr(obj0, &ptr);
+    std::string *ptr = (std::string *)0;
+    int res = SWIG_AsPtr_std_string(obj0, &ptr);
     if (!SWIG_IsOK(res) || !ptr) {
-      SWIG_exception_fail(SWIG_ArgError((ptr ? res : SWIG_TypeError)), "in method '" "new_JITEngine" "', argument " "1"" of type '" "std::vector< std::string,std::allocator< std::string > >""'"); 
+      SWIG_exception_fail(SWIG_ArgError((ptr ? res : SWIG_TypeError)), "in method '" "new_JITEngine" "', argument " "1"" of type '" "std::string""'"); 
     }
     arg1 = *ptr;
     if (SWIG_IsNewObj(res)) delete ptr;
   }
-  ecode2 = SWIG_AsVal_bool(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "new_JITEngine" "', argument " "2"" of type '" "bool""'");
+  {
+    std::vector<std::string,std::allocator< std::string > > *ptr = (std::vector<std::string,std::allocator< std::string > > *)0;
+    int res = swig::asptr(obj1, &ptr);
+    if (!SWIG_IsOK(res) || !ptr) {
+      SWIG_exception_fail(SWIG_ArgError((ptr ? res : SWIG_TypeError)), "in method '" "new_JITEngine" "', argument " "2"" of type '" "std::vector< std::string,std::allocator< std::string > >""'"); 
+    }
+    arg2 = *ptr;
+    if (SWIG_IsNewObj(res)) delete ptr;
+  }
+  ecode3 = SWIG_AsVal_bool(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "new_JITEngine" "', argument " "3"" of type '" "bool""'");
   } 
-  arg2 = static_cast< bool >(val2);
-  result = (JITEngine *)new JITEngine(arg1,arg2);
+  arg3 = static_cast< bool >(val3);
+  result = (JITEngine *)new JITEngine(arg1,arg2,arg3);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_JITEngine, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -16102,21 +16113,32 @@ fail:
 
 SWIGINTERN PyObject *_wrap_new_JITEngine__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
-  std::vector< std::string,std::allocator< std::string > > arg1 ;
+  std::string arg1 ;
+  std::vector< std::string,std::allocator< std::string > > arg2 ;
   PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
   JITEngine *result = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:new_JITEngine",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OO:new_JITEngine",&obj0,&obj1)) SWIG_fail;
   {
-    std::vector<std::string,std::allocator< std::string > > *ptr = (std::vector<std::string,std::allocator< std::string > > *)0;
-    int res = swig::asptr(obj0, &ptr);
+    std::string *ptr = (std::string *)0;
+    int res = SWIG_AsPtr_std_string(obj0, &ptr);
     if (!SWIG_IsOK(res) || !ptr) {
-      SWIG_exception_fail(SWIG_ArgError((ptr ? res : SWIG_TypeError)), "in method '" "new_JITEngine" "', argument " "1"" of type '" "std::vector< std::string,std::allocator< std::string > >""'"); 
+      SWIG_exception_fail(SWIG_ArgError((ptr ? res : SWIG_TypeError)), "in method '" "new_JITEngine" "', argument " "1"" of type '" "std::string""'"); 
     }
     arg1 = *ptr;
     if (SWIG_IsNewObj(res)) delete ptr;
   }
-  result = (JITEngine *)new JITEngine(arg1);
+  {
+    std::vector<std::string,std::allocator< std::string > > *ptr = (std::vector<std::string,std::allocator< std::string > > *)0;
+    int res = swig::asptr(obj1, &ptr);
+    if (!SWIG_IsOK(res) || !ptr) {
+      SWIG_exception_fail(SWIG_ArgError((ptr ? res : SWIG_TypeError)), "in method '" "new_JITEngine" "', argument " "2"" of type '" "std::vector< std::string,std::allocator< std::string > >""'"); 
+    }
+    arg2 = *ptr;
+    if (SWIG_IsNewObj(res)) delete ptr;
+  }
+  result = (JITEngine *)new JITEngine(arg1,arg2);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_JITEngine, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -16126,33 +16148,41 @@ fail:
 
 SWIGINTERN PyObject *_wrap_new_JITEngine(PyObject *self, PyObject *args) {
   int argc;
-  PyObject *argv[3];
+  PyObject *argv[4];
   int ii;
   
   if (!PyTuple_Check(args)) SWIG_fail;
   argc = args ? (int)PyObject_Length(args) : 0;
-  for (ii = 0; (ii < 2) && (ii < argc); ii++) {
+  for (ii = 0; (ii < 3) && (ii < argc); ii++) {
     argv[ii] = PyTuple_GET_ITEM(args,ii);
-  }
-  if (argc == 1) {
-    int _v;
-    int res = swig::asptr(argv[0], (std::vector<std::string,std::allocator< std::string > >**)(0));
-    _v = SWIG_CheckState(res);
-    if (_v) {
-      return _wrap_new_JITEngine__SWIG_1(self, args);
-    }
   }
   if (argc == 2) {
     int _v;
-    int res = swig::asptr(argv[0], (std::vector<std::string,std::allocator< std::string > >**)(0));
+    int res = SWIG_AsPtr_std_string(argv[0], (std::string**)(0));
     _v = SWIG_CheckState(res);
     if (_v) {
-      {
-        int res = SWIG_AsVal_bool(argv[1], NULL);
-        _v = SWIG_CheckState(res);
-      }
+      int res = swig::asptr(argv[1], (std::vector<std::string,std::allocator< std::string > >**)(0));
+      _v = SWIG_CheckState(res);
       if (_v) {
-        return _wrap_new_JITEngine__SWIG_0(self, args);
+        return _wrap_new_JITEngine__SWIG_1(self, args);
+      }
+    }
+  }
+  if (argc == 3) {
+    int _v;
+    int res = SWIG_AsPtr_std_string(argv[0], (std::string**)(0));
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      int res = swig::asptr(argv[1], (std::vector<std::string,std::allocator< std::string > >**)(0));
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        {
+          int res = SWIG_AsVal_bool(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          return _wrap_new_JITEngine__SWIG_0(self, args);
+        }
       }
     }
   }
@@ -16160,8 +16190,8 @@ SWIGINTERN PyObject *_wrap_new_JITEngine(PyObject *self, PyObject *args) {
 fail:
   SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'new_JITEngine'.\n"
     "  Possible C/C++ prototypes are:\n"
-    "    JITEngine::JITEngine(std::vector< std::string,std::allocator< std::string > >,bool)\n"
-    "    JITEngine::JITEngine(std::vector< std::string,std::allocator< std::string > >)\n");
+    "    JITEngine::JITEngine(std::string,std::vector< std::string,std::allocator< std::string > >,bool)\n"
+    "    JITEngine::JITEngine(std::string,std::vector< std::string,std::allocator< std::string > >)\n");
   return 0;
 }
 
@@ -16310,34 +16340,17 @@ fail:
 SWIGINTERN PyObject *_wrap_JITEngine_optimize(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   JITEngine *arg1 = (JITEngine *) 0 ;
-  SwigValueWrapper< FunctionAdaptor > arg2 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  void *argp2 ;
-  int res2 = 0 ;
   PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OO:JITEngine_optimize",&obj0,&obj1)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:JITEngine_optimize",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_JITEngine, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "JITEngine_optimize" "', argument " "1"" of type '" "JITEngine *""'"); 
   }
   arg1 = reinterpret_cast< JITEngine * >(argp1);
-  {
-    res2 = SWIG_ConvertPtr(obj1, &argp2, SWIGTYPE_p_FunctionAdaptor,  0  | 0);
-    if (!SWIG_IsOK(res2)) {
-      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "JITEngine_optimize" "', argument " "2"" of type '" "FunctionAdaptor""'"); 
-    }  
-    if (!argp2) {
-      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "JITEngine_optimize" "', argument " "2"" of type '" "FunctionAdaptor""'");
-    } else {
-      FunctionAdaptor * temp = reinterpret_cast< FunctionAdaptor * >(argp2);
-      arg2 = *temp;
-      if (SWIG_IsNewObj(res2)) delete temp;
-    }
-  }
-  (arg1)->optimize(arg2);
+  (arg1)->optimize();
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:

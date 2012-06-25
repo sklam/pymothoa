@@ -2,9 +2,11 @@
 import logging
 #logging.basicConfig(level=logging.DEBUG)
 
-from pymothoa.compiler import function
+from pymothoa.jit import default_module, function
 from pymothoa.types import *
 from pymothoa.dialect import *
+
+
 
 @function(ret=Int)
 def test_constant():
@@ -110,136 +112,84 @@ def test_ifelse(A, B):
 
 test_ifelse_py = test_ifelse.run_py
 
+default_module.optimize()
 # -------------------------------------------------------------------
 
 import unittest
 from random import random, randint
 from numpy import array
 from ctypes import c_float
-from pymothoa.util.testing import benchmark, relative_error, benchmark_summary
+from pymothoa.util.testing import relative_error
 
 class Test(unittest.TestCase):
-    def setUp(self):
-        self.REP = 1000
-
     def test_constant(self):
+        py_result = test_constant_py()
+        jit_result = test_constant()
 
-        with benchmark() as bm:
-            with bm.entry('Python'):
-                for _ in xrange(self.REP):
-                    py_result = test_constant_py()
-
-            with bm.entry('JIT'):
-                for _ in xrange(self.REP):
-                    jit_result = test_constant()
-
-        self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
+        self.assertLess(relative_error(py_result, jit_result), 0.0001/100)
 
     def test_arg(self):
-        ARG = randint(1,0xffffffff)
-        with benchmark() as bm:
-            with bm.entry('Python'):
-                for _ in xrange(self.REP):
-                    py_result = test_arg_py(ARG)
-
-            with bm.entry('JIT'):
-                for _ in xrange(self.REP):
-                    jit_result = test_arg(ARG)
-
-        self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
-
+        for _ in xrange(0, 100):
+            ARG = randint(1,0xffffffff)
+            py_result = test_arg_py(ARG)
+            jit_result = test_arg(ARG)
+            self.assertLess(relative_error(py_result, jit_result), 0.0001/100)
 
     def test_call(self):
-        ARG = randint(1,0xffffffff)
-        with benchmark() as bm:
-            with bm.entry('Python'):
-                    py_result = test_call_py(ARG)
+        for _ in xrange(0, 100):
+            ARG = randint(1,0xffffffff)
+            py_result = test_call_py(ARG)
+            jit_result = test_call(ARG)
 
-            with bm.entry('JIT'):
-                for _ in xrange(self.REP):
-                    jit_result = test_call(ARG)
-
-        self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
+            self.assertLess(relative_error(py_result, jit_result), 0.0001/100)
 
     def test_recur(self):
-        ARG = randint(1,100)
-        with benchmark() as bm:
-            with bm.entry('Python'):
-                for _ in xrange(self.REP):
-                    py_result = test_recur_py(ARG)
+        for _ in xrange(0, 100):
+            ARG = randint(1,100)
+            py_result = test_recur_py(ARG)
+            jit_result = test_recur(ARG)
 
-            with bm.entry('JIT'):
-                for _ in xrange(self.REP):
-                    jit_result = test_recur(ARG)
-
-        self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
+            self.assertLess(relative_error(py_result, jit_result), 0.0001/100)
 
 
     def test_recur64(self):
-        ARG = randint(1,100)
-        with benchmark() as bm:
-            with bm.entry('Python'):
-                for _ in xrange(self.REP):
-                    py_result = test_recur64_py(ARG)
+        for _ in xrange(0, 100):
+            ARG = randint(1,100)
+            py_result = test_recur64_py(ARG)
+            jit_result = test_recur64(ARG)
 
-            with bm.entry('JIT'):
-                for _ in xrange(self.REP):
-                    jit_result = test_recur64(ARG)
-
-        self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
+            self.assertLess(relative_error(py_result, jit_result), 0.0001/100)
 
     def test_float(self):
         ARG = 321.321e+2
-        with benchmark() as bm:
-            with bm.entry('Python'):
-                for _ in xrange(self.REP):
-                    py_result = test_float_py(ARG)
+        py_result = test_float_py(ARG)
+        jit_result = test_float(ARG)
 
-            with bm.entry('JIT'):
-                for _ in xrange(self.REP):
-                    jit_result = test_float(ARG)
-
-        self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
+        self.assertLess(relative_error(py_result, jit_result), 0.0001/100)
 
     def test_double(self):
         ARG = 321.321e+4
-        with benchmark() as bm:
-            with bm.entry('Python'):
-                for _ in xrange(self.REP):
-                    py_result = test_double_py(ARG)
+        py_result = test_double_py(ARG)
+        jit_result = test_double(ARG)
 
-            with bm.entry('JIT'):
-                for _ in xrange(self.REP):
-                    jit_result = test_double(ARG)
-
-        self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
+        self.assertLess(relative_error(py_result, jit_result), 0.0001/100)
 
     def test_forloop(self):
         ARG = 1, 2**10
-        with benchmark() as bm:
-            with bm.entry('Python'):
-                for _ in xrange(self.REP):
-                    py_result = test_forloop_py(*ARG)
+        py_result = test_forloop_py(*ARG)
+        jit_result = test_forloop(*ARG)
 
-            with bm.entry('JIT'):
-                for _ in xrange(self.REP):
-                    jit_result = test_forloop(*ARG)
-
-        self.assertTrue(relative_error(py_result, jit_result) < 0.0001/100)
+        self.assertLess(relative_error(py_result, jit_result), 0.0001/100)
 
     def test_ifelse(self):
-        ARG = randint(1,10), randint(1,10)
-        with benchmark() as bm:
-            with bm.entry('Python'):
-                for _ in xrange(self.REP):
-                    py_result = test_ifelse_py(*ARG)
-            with bm.entry('JIT'):
-                for _ in xrange(self.REP):
-                    jit_result = test_ifelse(*ARG)
-        self.assertTrue(py_result == jit_result)
+        for _ in xrange(100):
+            ARG = randint(1,10), randint(1,10)
+            py_result = test_ifelse_py(*ARG)
+            jit_result = test_ifelse(*ARG)
+
+            self.assertEqual(py_result, jit_result)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Test)
     unittest.TextTestRunner(verbosity=2).run(suite)
 
-    benchmark_summary()

@@ -2,7 +2,7 @@ import logging
 import unittest
 logging.basicConfig(level=logging.DEBUG)
 
-from pymothoa.compiler import function
+from pymothoa.jit import default_module, function
 from pymothoa.compiler_errors import *
 from pymothoa.types import *
 from pymothoa.dialect import *

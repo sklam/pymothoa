@@ -3,13 +3,17 @@ import ast, inspect
 
 from pymothoa.util.descriptor import Descriptor, instanceof
 from pymothoa.compiler_errors import FunctionDeclarationError
-from module import LLVMModuleManager
+from module import LLVMModule
 from backend import LLVMCodeGenerator
 from types import *
 
 logger = logging.getLogger(__name__)
 
 class LLVMFunction(object):
+
+    ret = Descriptor(constant=True)
+    args = Descriptor(constant=True)
+
     retty = Descriptor(constant=True)
     argtys = Descriptor(constant=True)
 
@@ -19,18 +23,22 @@ class LLVMFunction(object):
     c_funcptr_type = Descriptor(constant=True)
     c_funcptr = Descriptor(constant=True)
 
+    manager = Descriptor(constant=True)
+
     _workarounds = Descriptor(constant=True)
 
     # wordarounds
-    RET_BOOL_WORKAROUND='converts return type to int8'
-    ARG_BOOL_WORKAROUND='converts argument type to int8'
-
-    manager = LLVMModuleManager() # class member
+    RET_BOOL_WORKAROUND='converts boolean return type to int8'
+    ARG_BOOL_WORKAROUND='converts boolean argument type to int8'
 
     @classmethod
-    def new(cls, orig_func, retty, argtys):
+    def new(cls, module, orig_func, retty, argtys):
+
         self = cls()
         self.code_python = orig_func
+        self.manager = module
+        self.ret=retty
+        self.args=argtys
 
         self._workarounds = set()
 
@@ -54,17 +62,25 @@ class LLVMFunction(object):
         return self
 
     @classmethod
-    def new_declaration(cls, fname, retty, argtys):
+    def new_declaration(cls, module, fname, retty, argtys):
         self = cls()
+        self.manager = module
         self.retty = LLVMType(retty)
         self.argtys = map(lambda X: LLVMType(X), argtys)
+        self.ret=retty
+        self.args=argtys
 
         # declare
-        retty = LLVMType(retty).type()
-        argtys = map(lambda X: X.type(), map(lambda X: LLVMType(X), argtys))
-        self.code_llvm = cls.manager.jit_engine.make_function(fname, retty, argtys)
+        retty = self.retty.type()
+        argtys = map(lambda X: X.type(), self.argtys)
+        self.code_llvm = self.manager.jit_engine.make_function(fname, retty, argtys)
         if not self.code_llvm.valid():
             raise FunctionDeclarationError(cls.manager.jit_engine.last_error())
+
+        self.compile = NotImplemented
+        self.run_py = NotImplemented
+        self.run_jit = NotImplemented
+        self.assembly = NotImplemented
 
         return self
 
@@ -98,10 +114,6 @@ class LLVMFunction(object):
         self.code_llvm.verify()     # verify generated code
 
         logger.debug('Dump LLVM IR\n%s', self.code_llvm.dump())
-
-    def optimize(self):
-        self.manager.optimize(self.code_llvm)
-        logger.debug('Optimized llvm ir:\n%s', self.code_llvm.dump())
 
     def assembly(self):
         return self.manager.dump_asm(self.code_llvm)

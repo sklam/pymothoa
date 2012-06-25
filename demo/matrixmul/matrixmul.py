@@ -1,6 +1,6 @@
 import logging; logging.basicConfig()
 
-from pymothoa.compiler import function      # include function decorator
+from pymothoa.jit import default_module, function      # include function decorator
 from pymothoa.dialect import *
 from pymothoa.types import *                # include all types
 
@@ -57,6 +57,7 @@ def matrixmul_strassen_2x2(Pn, Mn, Nn):
     Pn[2] = A[1]+A[3]
     Pn[3] = A[0]-A[1]+A[2]+A[5]
 
+default_module.optimize()
 #-------------------------------------------------------------------------------
 
 from pymothoa.util.testing import benchmark, benchmark_summary, relative_error

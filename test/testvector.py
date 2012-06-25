@@ -1,7 +1,7 @@
 import logging
 #logging.basicConfig(level=logging.DEBUG)
 
-from pymothoa.compiler import function
+from pymothoa.jit import default_module, function
 from pymothoa.types import *
 from pymothoa.dialect import *
 
@@ -80,6 +80,7 @@ def test_vector_scalar(A):
     vec = A
     return vec[0]+vec[1]+vec[2]+vec[3]
 
+default_module.optimize()
 # -------------------------------------------------------------------
 
 import unittest
@@ -108,7 +109,7 @@ class Test(unittest.TestCase):
                     jit_result = test_vector_float(self.Af, self.N)
 
             print py_result, jit_result
-        self.assertTrue(relative_error(py_result, jit_result) < 0.01/100)
+        self.assertLess(relative_error(py_result, jit_result), 0.01/100)
 
     def test_vector_double(self):
         with benchmark() as bm:
@@ -121,7 +122,7 @@ class Test(unittest.TestCase):
                     jit_result = test_vector_double(self.Ad, self.N)
 
             print py_result, jit_result
-        self.assertTrue(relative_error(py_result, jit_result) < 0.01/100)
+        self.assertLess(relative_error(py_result, jit_result), 0.01/100)
 
     def test_vector_int(self):
         with benchmark() as bm:
@@ -135,13 +136,13 @@ class Test(unittest.TestCase):
 
             error = relative_error(py_result, jit_result)
             print py_result, jit_result
-        self.assertTrue(error < 0.01/100)
+        self.assertLess(error, 0.01/100)
 
     def test_vector_scalar(self):
         result = test_vector_scalar(123)
-        self.assertTrue( result == 123 * 4 )
+        self.assertEqual(result, 123 * 4)
         result = test_vector_scalar(321)
-        self.assertTrue( result == 321 * 4 )
+        self.assertEqual(result, 321 * 4)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Test)

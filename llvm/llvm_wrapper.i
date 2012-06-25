@@ -122,7 +122,8 @@ private:
 private:
     llvm::Module * module_;
     llvm::ExecutionEngine * ee_;
-    llvm::FunctionPassManager * fpm_;
+    //llvm::FunctionPassManager * fpm_;
+    llvm::PassManager * fpm_;
 
     std::string last_error_;
 };

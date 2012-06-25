@@ -201,7 +201,7 @@ class LLVMCodeGenerator(CodeGenerationBase):
         if not is_endif_reachable:
             self.builder.unreachable()
 
-    def generate_for_range(self, counter_ptr, initcount, endcount, loopbody):
+    def generate_for_range(self, counter_ptr, initcount, endcount, step, loopbody):
         self.builder.store(initcount.value(self.builder), counter_ptr.pointer)
 
         bb_cond = self.new_basic_block('loopcond')
@@ -226,9 +226,14 @@ class LLVMCodeGenerator(CodeGenerationBase):
 
         # incr
         self.builder.insert_at(bb_incr)
-        one = self.generate_constant_int(1)
-        counter_next = self.builder.add(counter_ptr.value(self.builder),
-                                        one.value(self.builder))
+
+#        counter_next = self.builder.add(counter_ptr.value(self.builder),
+#                                        step.value(self.builder))
+
+        counter_next = counter_ptr.type.op_add(counter_ptr.value(self.builder),
+                                               step.value(self.builder),
+                                               self.builder)
+
         self.builder.store(counter_next, counter_ptr.pointer)
         self.builder.branch(bb_cond)
 

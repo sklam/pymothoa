@@ -387,16 +387,23 @@ This error should have been caught by the Python parser.''')
             zero = self.generate_constant_int(0)
             initcount = zero # init count is implicitly zero
             endcountpos = 0
+            step = self.generate_constant_int(1)
         elif iternode_arg_N==2: # both BEGIN and END are given
             initcount = self.visit(iternode.args[0]) # init count is given
             endcountpos = 1
-        else:
-            raise NotImplementedError('Range(BEGIN, END, STEP) is not implemented')
+            step = self.generate_constant_int(1)
+        else: # with BEGIN, END and STEP
+            initcount = self.visit(iternode.args[0]) # init count is given
+            endcountpos = 1
+            step = self.visit(iternode.args[2]) # step is given
 
         endcount = self.visit(iternode.args[endcountpos]) # end count
 
         loopbody = node.body
-        self.generate_for_range(counter_ptr, initcount, endcount, loopbody)
+        self.generate_for_range(counter_ptr, initcount, endcount, step, loopbody)
+
+    def generate_for_range(self, counter, init, end, step, body):
+        raise NotImplementedError
 
     def visit_BoolOp(self, node):
         if len(node.values)!=2: raise AssertionError
@@ -413,4 +420,13 @@ This error should have been caught by the Python parser.''')
 
     def generate_not(self, operand):
         raise NotImplementedError
+
+    def visit_AugAssign(self, node):
+        target = self.visit(node.target)
+        node.target.ctx = ast.Load() # change context to load
+        target_val = self.visit(node.target)
+        value = self.visit(node.value)
+
+        result = self.generate_binop(type(node.op), target_val, value)
+        return self.generate_assign(result, target)
 

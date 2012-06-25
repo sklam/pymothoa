@@ -15,16 +15,11 @@ def test_vector_float(A, N):
       result = Float,
     )
 
-    acc[0] = 0
-    acc[1] = 0
-    acc[2] = 0
-    acc[3] = 0
+    acc = 0.0
 
     for i in xrange(N/VW):
-        temp[0] = A[i*VW + 0]
-        temp[1] = A[i*VW + 1]
-        temp[2] = A[i*VW + 2]
-        temp[3] = A[i*VW + 3]
+        for j in xrange(VW):
+            temp[j] = A[i*VW + j]
         acc = acc + temp
 
     return acc[0] * acc[1] * acc[2] * acc[3]
@@ -38,20 +33,14 @@ def test_vector_double(A, N):
       result = Double,
     )
 
-    acc[0] = 0
-    acc[1] = 0
-    acc[2] = 0
-    acc[3] = 0
+    acc = 0.0
 
     for i in xrange(N/VW):
-        temp[0] = A[i*VW + 0]
-        temp[1] = A[i*VW + 1]
-        temp[2] = A[i*VW + 2]
-        temp[3] = A[i*VW + 3]
+        for j in xrange(VW):
+            temp[j] = A[i*VW + j]
         acc = acc + temp
 
     return acc[0] * acc[1] * acc[2] * acc[3]
-
 
 @function(ret=Int, args=[ Array(Int), Int])
 def test_vector_int(A, N):
@@ -61,17 +50,12 @@ def test_vector_int(A, N):
       result = Int,
     )
 
-    acc[0] = 0
-    acc[1] = 0
-    acc[2] = 0
-    acc[3] = 0
+    acc = 0
 
     for i in xrange(N/VW):
-        temp[0] = A[i*VW + 0]
-        temp[1] = A[i*VW + 1]
-        temp[2] = A[i*VW + 2]
-        temp[3] = A[i*VW + 3]
-        acc = acc + temp
+        for j in xrange(VW):
+            temp[j] = A[i*VW + j]
+        acc += temp
 
     return acc[0] * acc[1] * acc[2] * acc[3]
 
@@ -102,7 +86,7 @@ import unittest
 from random import random, randint
 from numpy import array
 from ctypes import c_double, c_float, c_int
-from _util import benchmark, relative_error, benchmark_summary
+from pymothoa.util.testing import benchmark, relative_error, benchmark_summary
 
 class Test(unittest.TestCase):
 
@@ -163,7 +147,7 @@ if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Test)
     unittest.TextTestRunner(verbosity=2).run(suite)
 
-    if True:
+    if False:
         print 'Assembly'.center(80, '=')
         print test_vector_scalar.assembly()
         print 'End Assembly'.center(80, '=')

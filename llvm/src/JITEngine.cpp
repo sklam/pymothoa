@@ -65,7 +65,8 @@ JITEngine::JITEngine(std::vector<std::string> passes, bool killOnBadPass)
 
     ee_->DisableLazyCompilation(); // No lazy compiling
 
-    fpm_ = new FunctionPassManager(module_);
+    //fpm_ = new FunctionPassManager(module_);
+    fpm_ = new PassManager;
 
     PassRegistry & registry = *PassRegistry::getPassRegistry();
     for (size_t i=0; i<passes.size(); ++i) {
@@ -77,32 +78,8 @@ JITEngine::JITEngine(std::vector<std::string> passes, bool killOnBadPass)
             if (killOnBadPass) exit(1);
         }
     }
-//    // Set up the optimizer pipeline.  Start with registering info about how the
-//    // target lays out data structures.
-//    fpm_->add(new TargetData(*ee_->getTargetData()));
-//    // Promote allocas to registers.
-//    fpm_->add(createPromoteMemoryToRegisterPass());
-//    // Provide basic AliasAnalysis support for GVN.
-//    fpm_->add(createBasicAliasAnalysisPass());
-//    // Do simple "peephole" optimizations and bit-twiddling optzns.
-//    fpm_->add(createInstructionCombiningPass());
-//    // Reassociate expressions.
-//    fpm_->add(createReassociatePass());
-//    // Eliminate Common SubExpressions.
-//    fpm_->add(createGVNPass());
-//    // - ? - Unroll loop - Am I using this correctly? Cannot not see any change!
-//    fpm_->add(createIndVarSimplifyPass());
-//    fpm_->add(createLoopUnrollPass());
-//    // - ? - Vectorize - Am I using this correctly
-//    fpm_->add(createBBVectorizePass());
-//    // Simplify the control flow graph (deleting unreachable blocks, etc).
-//    fpm_->add(createCFGSimplificationPass());
-//    // - ? - Eliminate tail recursion
-//    fpm_->add(createTailCallEliminationPass());
 
-
-
-    fpm_->doInitialization();
+    //fpm_->doInitialization();
 }
 
 JITEngine::~JITEngine(){
@@ -135,7 +112,9 @@ FunctionAdaptor JITEngine::make_function(const char name[], llvm::Type *result, 
     //            http://llvm.org/docs/tutorial/LangImpl4.html
     using namespace llvm;
     FunctionType * fnty = FunctionType::get(result, params, false);
-    Function * func = Function::Create(fnty, Function::ExternalLinkage, name, module_);
+    Function * func = Function::Create(fnty,
+                                       Function::ExternalLinkage,
+                                       name, module_);
 
     // Named conflicted. LLVM will auto rename
     if (func->getName() != name) {
@@ -167,7 +146,8 @@ bool JITEngine::verify() const {
 }
 
 void JITEngine::optimize(FunctionAdaptor func){
-    fpm_->run(*func.get_function());
+    //fpm_->run(*func.get_function());
+    fpm_->run(*module_);
 }
 
 void * JITEngine::get_pointer_to_function(FunctionAdaptor fn){

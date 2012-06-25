@@ -243,6 +243,10 @@ class LLVMUnboundedArray(types.GenericUnboundedArray):
 
     elemtype = Descriptor(constant=True, constrains=instanceof(types.BuiltinType))
 
+    def cast(self, old, builder):
+        if isinstance(old.type, LLVMUnboundedArray):
+            return old.value(builder)
+
     def ctype(self):
         return ctypes.POINTER(self.elemtype.ctype())
 

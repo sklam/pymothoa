@@ -66,28 +66,11 @@ class Benchmark:
 
 
 @contextmanager
-def benchmark():
-    CALLER = inspect.currentframe().f_back.f_back.f_code
-    name = '%s:%d'%(CALLER.co_name, CALLER.co_firstlineno)
+def benchmark(title=''):
+    FRAME = inspect.currentframe().f_back.f_back
+    CALLER = FRAME.f_code
+    name = '%s at %s:%d'%(title, CALLER.co_name, FRAME.f_lineno)
     bm = Benchmark(name)
     yield bm
     BENCHMARK_SUMMARY.append(bm)
 
-    '''
-    t1 = Timer()
-    t2 = Timer()
-    yield t1, t2
-
-    dt1 = t1.duration()
-    dt2 = t2.duration()
-
-    name = '%s:%d'%(CALLER.co_name, CALLER.co_firstlineno)
-    template = '%30s | %%s is faster by %%.1fx' % name
-
-    if dt1 < dt2:
-        msg = template % (name1, dt2/dt1)
-    else:
-        msg = template % (name2, dt1/dt2)
-
-    BENCHMARK_SUMMARY.append(msg)
-    '''

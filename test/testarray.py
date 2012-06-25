@@ -46,7 +46,7 @@ from random import random
 import numpy as np
 import array
 from ctypes import c_float
-from _util import benchmark, relative_error, benchmark_summary
+from pymothoa.util.testing import benchmark, relative_error, benchmark_summary
 
 class Test(unittest.TestCase):
     def setUp(self):

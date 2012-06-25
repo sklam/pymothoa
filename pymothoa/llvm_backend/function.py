@@ -101,11 +101,20 @@ class LLVMFunction(object):
 
     def optimize(self):
         self.manager.optimize(self.code_llvm)
-
         logger.debug('Optimized llvm ir:\n%s', self.code_llvm.dump())
 
     def assembly(self):
         return self.manager.dump_asm(self.code_llvm)
+
+    def prepare_pointer_to_function(self):
+        '''Obtain pointer to function from the JIT engine'''
+        addr = self.manager.jit_engine.get_pointer_to_function(self.code_llvm)
+        # Create binding with ctypes library
+        from ctypes import CFUNCTYPE, cast
+        c_argtys = map(lambda T: T.ctype(), self.argtys)
+        c_retty = self.retty.ctype()
+        self.c_funcptr_type = CFUNCTYPE(c_retty, *c_argtys)
+        self.c_funcptr = cast( int(addr), self.c_funcptr_type )
 
     def run_py(self, *args):
         return self.code_python(*args)
@@ -116,14 +125,7 @@ class LLVMFunction(object):
         try:
             retval = self.c_funcptr(*argvals)
         except AttributeError: # Has not create binding to the function.
-            # Obtain pointer to function from the JIT engine
-            addr = self.manager.jit_engine.get_pointer_to_function(self.code_llvm)
-            # Create binding with ctypes library
-            from ctypes import CFUNCTYPE, cast
-            c_argtys = map(lambda T: T.ctype(), self.argtys)
-            c_retty = self.retty.ctype()
-            self.c_funcptr_type = CFUNCTYPE(c_retty, *c_argtys)
-            self.c_funcptr = cast( int(addr), self.c_funcptr_type )
+            self.prepare_pointer_to_function()
             # Call the function
             retval = self.c_funcptr(*argvals)
         # Apply any workaround to the return value

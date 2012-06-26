@@ -141,7 +141,37 @@ This error should have been caught by the Python parser.''')
             fn = self.visit(node.func)
             if not issubclass(fn, types.DummyType):
                 raise AssertionError('Not a dummy type.')
-            if fn is types.Vector:
+            if fn is types.Slice:
+                # Defining a slice type
+                if len(node.args) != 1:
+                    raise InvalidUseOfConstruct(
+                            node,
+                            ('Slice constructor takes 1 arguments.\n'
+                             'Hint: Slice(ElemType)')
+                          )
+
+                if node.keywords or node.starargs or node.kwargs:
+                    raise InvalidUseOfConstruct(
+                                node,
+                                'Cannot use keyword or star arguments.'
+                            )
+
+                elemty = self.visit(node.args[0])
+
+                if type(elemty) is not type or not issubclass(elemty, types.Type):
+                    raise InvalidUseOfConstruct(
+                                node,
+                                'Expecting a type for element type of array.'
+                          )
+
+                newclsname = '__CustomSlice__%s'%(elemty.__name__)
+                newcls = type(newclsname, (types.GenericUnboundedArray,), {
+                    # List all class members of the new array type.
+                    'elemtype' : elemty,
+                })
+
+                return newcls # return the new array type class object
+            elif fn is types.Vector:
                 # Defining a vector type
                 if len(node.args) != 2:
                     raise InvalidUseOfConstruct(
@@ -244,8 +274,11 @@ This error should have been caught by the Python parser.''')
         return self.generate_compare(op, lhs, rhs)
 
     def visit_Return(self, node):
-        value = self.visit(node.value)
-        self.generate_return(value)
+        if node.value is not None:
+            value = self.visit(node.value)
+            self.generate_return(value)
+        else:
+            self.generate_return()
 
     def generate_return(self, value):
         raise NotImplementedError
@@ -267,6 +300,7 @@ This error should have been caught by the Python parser.''')
             raise NotImplementedError('Mutliple targets in assignment.')
         target = self.visit(node.targets[0])
         value = self.visit(node.value)
+
         return self.generate_assign(value, target)
 
     def generate_assign(self, from_value, to_target):
@@ -301,24 +335,41 @@ This error should have been caught by the Python parser.''')
         raise NotImplementedError
 
     def visit_Subscript(self, node):
-        assert isinstance(node.slice, ast.Index)
-        ptr = self.visit(node.value)
-        idx = self.visit(node.slice.value)
-        if isinstance(ptr.type, types.GenericVector):
-            # Access vector element
-            if isinstance(node.ctx, ast.Load): # load
-                return self.generate_vector_load_elem(ptr, idx)
-            elif isinstance(node.ctx, ast.Store): # store
-                return self.generate_vector_store_elem(ptr, idx)
-        elif isinstance(ptr.type, types.GenericUnboundedArray):
-            # Access array element
-            if isinstance(node.ctx, ast.Load): # load
-                return self.generate_array_load_elem(ptr, idx)
-            elif isinstance(node.ctx, ast.Store): # store
-                return self.generate_array_store_elem(ptr, idx)
-        else: # Unsupported types
-            raise InvalidSubscriptError(node)
+        if isinstance(node.slice, ast.Slice):
+            ptr = self.visit(node.value)
+            idx = self.visit(node.slice.lower)
+            if node.slice.upper or node.slice.step:
+                raise NotImplementedError
 
+            if not isinstance(ptr.type, types.GenericUnboundedArray): # only array
+                raise NotImplementedError
+            if not isinstance(node.ctx, ast.Load): # only at load context
+                raise NotImplementedError
+
+            return self.generate_array_slice(ptr, idx, None, None)
+
+        else:
+            if not isinstance(node.slice, ast.Index):
+                raise AssertionError(ast.dump(node.slice))
+            ptr = self.visit(node.value)
+            idx = self.visit(node.slice.value)
+            if isinstance(ptr.type, types.GenericVector):
+                # Access vector element
+                if isinstance(node.ctx, ast.Load): # load
+                    return self.generate_vector_load_elem(ptr, idx)
+                elif isinstance(node.ctx, ast.Store): # store
+                    return self.generate_vector_store_elem(ptr, idx)
+            elif isinstance(ptr.type, types.GenericUnboundedArray):
+                # Access array element
+                if isinstance(node.ctx, ast.Load): # load
+                    return self.generate_array_load_elem(ptr, idx)
+                elif isinstance(node.ctx, ast.Store): # store
+                    return self.generate_array_store_elem(ptr, idx)
+            else: # Unsupported types
+                raise InvalidSubscriptError(node)
+
+    def generate_array_slice(ptr, lower, upper=None, step=None):
+        raise NotImplementedError
 
     def generate_vector_load_elem(self, ptr, idx):
         raise NotImplementedError

@@ -22,7 +22,6 @@ class LLVMFuncDecl(LLVMFunction):
         self.manager = module
         self.code_llvm = fn_decl
 
-
 class LLVMFuncDef(LLVMFunction):
     code_python = Descriptor(constant=True)
 
@@ -84,8 +83,9 @@ class LLVMFuncDef(LLVMFunction):
         return self.code_python(*args)
 
     def run_jit(self, *args):
+        from itertools import izip
         # Cast the arguments to corresponding types
-        argvals = [aty.argument_adaptor(aval) for aty, aval in zip(self.argtys, args)]
+        argvals = (aty.argument_adaptor(aval) for aty, aval in izip(self.argtys, args))
         try:
             retval = self.c_funcptr(*argvals)
         except AttributeError: # Has not create binding to the function.

@@ -36,9 +36,19 @@ class LLVMType(object):
         try:
             return object.__new__(TYPE_MAP[datatype])
         except KeyError:
-            if (isinstance(datatype, types.Array)
-                or (type(datatype) is type
-                    and issubclass(datatype, types.GenericBoundedArray))): # Unbounded array type
+            def is_array(datatype):
+                if isinstance(datatype, types.Array):
+                    return True
+                elif type(datatype) is not type:
+                    return False
+                elif issubclass(datatype, types.GenericBoundedArray):
+                    return True
+                elif issubclass(datatype, types.GenericUnboundedArray):
+                    return True
+                else:
+                    return False
+
+            if is_array(datatype): # array type
                 elemtype = datatype.elemtype
                 obj = object.__new__(LLVMUnboundedArray)
                 obj.elemtype = LLVMType(elemtype)

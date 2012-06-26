@@ -57,7 +57,12 @@ class LLVMCodeGenerator(CodeGenerationBase):
     def generate_function_arguments(self, arguments):
         fn_args = self.function.arguments()
         for i, name in enumerate(arguments):
-            var = LLVMVariable(name, self.argtys[i], self.builder)
+            try:
+                var = LLVMVariable(name, self.argtys[i], self.builder)
+            except IndexError:
+                raise FunctionDeclarationError(
+                        self.current_node,
+                        'Actual number of argument mismatch declaration.')
             self.builder.store(fn_args[i], var.pointer)
             self.symbols[name] = var
 
@@ -88,7 +93,10 @@ class LLVMCodeGenerator(CodeGenerationBase):
         pred = fn(lval, rval, self.builder)
         return LLVMTempValue(pred, LLVMType(types.Bool))
 
-    def generate_return(self, value):
+    def generate_return(self, value=None):
+        if value is None: # no return value
+            self.builder.ret_void()
+            return
         if isinstance(self.retty, LLVMVoid):
             raise InvalidReturnError(
                     self.current_node,
@@ -121,9 +129,11 @@ class LLVMCodeGenerator(CodeGenerationBase):
     def _call_function(self, fn, args, retty, argtys):
         arg_values = map(lambda X: LLVMTempValue(X.value(self.builder), X.type), args)
         # cast types
-        for i, argty in enumerate(argtys):
-            arg_values[i] = argty.cast(arg_values[i], self.builder)
-
+        try:
+            for i, argty in enumerate(argtys):
+                arg_values[i] = argty.cast(arg_values[i], self.builder)
+        except IndexError:
+            raise InvalidCall(self.current_node, 'Number of argument mismatch')
         out = self.builder.call(fn, arg_values)
         return LLVMTempValue(out, retty)
 
@@ -256,4 +266,12 @@ class LLVMCodeGenerator(CodeGenerationBase):
         boolval = boolty.cast(operand, self.builder)
         negated = boolty.op_not(boolval, self.builder)
         return LLVMTempValue(negated, boolty)
+
+    def generate_array_slice(self, ptr, lower, upper=None, step=None):
+        assert upper is None
+        assert step is None
+        ptr_val = ptr.value(self.builder)
+        lower_val = lower.value(self.builder)
+        offsetted = self.builder.gep(ptr_val, lower_val)
+        return LLVMTempValue(offsetted, ptr.type)
 

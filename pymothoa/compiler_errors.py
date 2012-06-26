@@ -13,8 +13,12 @@ class CompilerError(Exception):
         else:
             node = node_or_error
             super(CompilerError, self).__init__('\n'.join([self.message, additional]))
-            self.line = node.lineno
-            self.col = node.col_offset
+            try:
+                self.line = node.lineno
+                self.col = node.col_offset
+            except AttributeError:
+                self.line = 1
+                self.col = 0
 
     def is_due_to(self, errcls):
         if hasattr(self, 'inner'):

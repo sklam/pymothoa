@@ -86,7 +86,7 @@ class DummyType(Type):
     pass
 
 class Vector(DummyType):
-    def __init__(ty, ct):
+    def __init__(self, ty, ct):
         pass
 
 class Array(DummyType):
@@ -95,3 +95,7 @@ class Array(DummyType):
         '''Note: elemcount is ignored when using in the Python scope.
         '''
         self.elemtype = elemtype
+
+class Slice(DummyType):
+    def __init__(self, elemtype):
+        pass

@@ -40,6 +40,16 @@ def matrixmul_cached(Pn, Mn, Nn, n, stride):
             # Store elements
             Pn[row*RL+col] = total
 
+@function(args=[Array(Float), Array(Float), Array(Float), Int])
+def matrixmul_blocked(Pn, Mn, Nn, n):
+    if n <= 1024:
+        matrixmul_cached(Pn, Mn, Nn, n, 0)
+        return
+
+    for j in xrange(n/2):
+        for i in xrange(n/2):
+            pass
+
 @function(args=[Array(Float), Array(Float), Array(Float)])
 def matrixmul_strassen_2x2(Pn, Mn, Nn):
     # Strassen algorithm
@@ -78,9 +88,7 @@ def verify(Golden, Pn, n):
 def main():
     print 'Matrix-Matrix Multiplication Demo'.center(80, '=')
 
-    REP = 100
-
-    n = 16
+    n = 1024
     dim = n**2
 
     Mn = np.array(randomize_list(dim), dtype=c_float)
@@ -93,19 +101,23 @@ def main():
 
     Golden = np.matrix(Mn.reshape((n,n))) * np.matrix(Nn.reshape((n,n)))
 
-    Pn = np.zeros(dim, dtype=c_float)
-    matrixmul_naive(Pn, Mn, Nn, n, 0)
-    verify(Golden, Pn, n)
+#    Pn = np.zeros(dim, dtype=c_float)
+#    matrixmul_naive(Pn, Mn, Nn, n, 0)
+#    verify(Golden, Pn, n)
 
     Pn = np.zeros(dim, dtype=c_float)
     matrixmul_cached(Pn, Mn, Nn, n, 0)
     verify(Golden, Pn, n)
 
+    Pn = np.zeros(dim, dtype=c_float)
+    matrixmul_blocked(Pn, Mn, Nn, n)
+    verify(Golden, Pn, n)
+
+    data = []
     with benchmark('Matrix-Matrix Multiply') as bm:
 
         with bm.entry('Numpy'):
-            for _ in xrange(REP):
-                Golden = np.matrix(Mn.reshape((n,n))) * np.matrix(Nn.reshape((n,n)))
+            Golden = np.matrix(Mn.reshape((n,n))) * np.matrix(Nn.reshape((n,n)))
 
 #        Pn = np.zeros(dim, dtype=c_float)
 #        with bm.entry('JIT Naive'):
@@ -113,8 +125,9 @@ def main():
 #        verify(Golden, Pn, n)
 
         with bm.entry('JIT Cached'):
-            for _ in xrange(REP):
-                matrixmul_cached(Pn, Mn, Nn, n, 0)
+            matrixmul_cached(Pn, Mn, Nn, n, 0)
+        with bm.entry('JIT Blocked'):
+            matrixmul_blocked(Pn, Mn, Nn, n)
 
     # report benchmark
     benchmark_summary()

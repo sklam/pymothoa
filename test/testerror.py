@@ -2,52 +2,52 @@ import logging
 import unittest
 logging.basicConfig(level=logging.DEBUG)
 
-from pymothoa.jit import default_module, function
+from pymothoa.jit import JITModule, function
 from pymothoa.compiler_errors import *
 from pymothoa.types import *
 from pymothoa.dialect import *
 
-
-@function(ret=Int, later=True)
+dummy = JITModule('testerror')
+@dummy.function(ret=Int, later=True)
 def test_no_ret():
     pass
 
-@function(later=True)
+@dummy.function(later=True)
 def test_no_var_decl():
     A + 1
 
-@function(later=True)
+@dummy.function(later=True)
 def test_wrong_ret():
     return 123
 
-@function(later=True)
+@dummy.function(later=True)
 def test_dup_var_decl():
     var ( A = Int )
     var ( A = Float )
 
-@function(later=True)
+@dummy.function(later=True)
 def test_invalid_subscript():
     var ( A = Int )
     A[0]
 
-@function(later=True)
+@dummy.function(later=True)
 def test_invalid_vector_ctor():
     var ( A = Vector(Int) )
 
-@function(later=True)
+@dummy.function(later=True)
 def test_invalid_vector_ctor_2():
     var ( A = Vector(Int, 0) )
 
-@function(later=True)
+@dummy.function(later=True)
 def test_invalid_vector_ctor_3():
     var ( A = Int )
     var ( vec = Vector(A, 0) )
 
-@function(args=[ Array(Float) ])
+@dummy.function(args=[ Array(Float) ])
 def test_invalid_array_typecode(A):
     pass
 
-@function(later=True)
+@dummy.function(later=True)
 def test_invalid_array_ctor():
     var ( array = Array(Int) )
 

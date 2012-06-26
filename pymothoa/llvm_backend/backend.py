@@ -15,27 +15,19 @@ import llvm # binding
 logger = logging.getLogger(__name__)
 
 class LLVMCodeGenerator(CodeGenerationBase):
-    jit_engine    = Descriptor(constant=True)
     retty         = Descriptor(constant=True)
     argtys        = Descriptor(constant=True)
     function      = Descriptor(constant=True)
 
 
-    def __init__(self, jit_engine, retty, argtys, symbols):
+    def __init__(self, fnobj, retty, argtys, symbols):
         super(LLVMCodeGenerator, self).__init__(symbols)
-        self.jit_engine = jit_engine
+        self.function = fnobj
         self.retty = retty
         self.argtys = argtys
 
     @contextmanager
     def generate_function(self, name):
-        retty = self.retty.type()
-        argtys = map(lambda X: X.type(), self.argtys)
-
-        namespace = self.symbols['__name__']
-        realname = '.'.join([namespace,name])
-        self.function = self.jit_engine.make_function(realname, retty, argtys)
-
         if not self.function.valid():
             raise FunctionDeclarationError(
                     self.current_node,
@@ -43,11 +35,6 @@ class LLVMCodeGenerator(CodeGenerationBase):
                 )
 
         self.symbols[name] = self.function
-
-        if self.function.name() != realname:
-            raise InternalError(self.current_node,
-                    'Generated function has a different name: %s'%(
-                    self.function.name() ) )
 
         # make basic block
         bb_entry = self.function.append_basic_block("entry")

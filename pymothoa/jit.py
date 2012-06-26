@@ -32,10 +32,6 @@ class JITModule(object):
     def declare_builtin(self, name, ret=types.Void, args=[]):
         return self.module.new_declaration(name, ret, args)
 
-    def use(self, fn):
-        print fn.args
-        return self.module.new_declaration(fn.code_llvm.name(), fn.ret, fn.args)
-
     def optimize(self):
         self.module.optimize()
         self.module.verify()

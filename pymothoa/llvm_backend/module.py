@@ -1,12 +1,14 @@
-'''
-Note: LLVM does not permit inter module call. Either the caller module is
+'''Note: LLVM does not permit inter module call. Either the caller module is
 linked with the callee module. Or, a function pointer is brought from the callee
 to the caller. (Any alternative?)
 '''
+import logging
+logger = logging.getLogger()
 
+from pymothoa import types
 from pymothoa.util.descriptor import Descriptor, instanceof
 from default_passes import DEFAULT_PASSES
-
+from types import LLVMType
 import llvm # binding
 
 class LLVMModule(object):
@@ -27,11 +29,62 @@ class LLVMModule(object):
     def dump(self):
         return self.jit_engine.dump()
 
-    def new_function(self, fnobj, ret, args):
-        from function import LLVMFunction
-        return LLVMFunction.new(self, fnobj, ret, args)
+    def _new_func_def_or_decl(self, ret, args, name_or_func):
+        from function import LLVMFuncDef, LLVMFuncDecl, LLVMFuncDef_BoolRet
+        is_func_def = not isinstance(name_or_func, basestring)
+        if is_func_def:
+            func = name_or_func
+            namespace = func.func_globals['__name__']
+            realname = '.'.join([namespace, func.__name__])
+        else:
+            name = name_or_func
+            realname = name
 
-    def new_declaration(self, fname, ret, args):
-        from function import LLVMFunction
-        return LLVMFunction.new_declaration(self, fname, ret, args)
+        # workaround for boolean return type
+        is_ret_bool = False
+        if ret is types.Bool:
+            # Change return type to 8-bit int
+            retty = LLVMType(types.Int8)
+            is_ret_bool = True
+            logger.warning('Using workaround (change to Int8) for boolean return type.')
+        else:
+            retty = LLVMType(ret)
+
+        # workaround for boolean argument type
+        argtys = []
+        count_converted_boolean = 0
+        for arg in args:
+            if arg is types.Bool:
+                argtys.append(LLVMType(types.Int8))
+                count_converted_boolean += 1
+            else:
+                argtys.append(LLVMType(arg))
+        else:
+            if count_converted_boolean:
+                logger.warning('Using workaround (changed to Int8) for boolean argument type.')
+
+        fn_decl = self.jit_engine.make_function(
+                    realname,
+                    retty.type(),
+                    map(lambda X: X.type(), argtys),
+                  )
+
+        if fn_decl.name() != realname:
+            raise NameError(
+                    'Generated function has a different name: %s'%(
+                        fn_decl.name()))
+
+        if is_func_def:
+            if is_ret_bool:
+                return LLVMFuncDef_BoolRet(func, retty, argtys, self, fn_decl)
+            else:
+                return LLVMFuncDef(func, retty, argtys, self, fn_decl)
+        else:
+            return LLVMFuncDecl(retty, argtys, self, fn_decl)
+
+    def new_function(self, func, ret, args):
+        return self._new_func_def_or_decl(ret, args, func)
+
+    def new_declaration(self, realname, ret, args):
+        return self._new_func_def_or_decl(ret, args, realname)
 

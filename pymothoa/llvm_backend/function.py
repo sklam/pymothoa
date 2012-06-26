@@ -10,83 +10,36 @@ from types import *
 logger = logging.getLogger(__name__)
 
 class LLVMFunction(object):
-
-    ret = Descriptor(constant=True)
-    args = Descriptor(constant=True)
-
     retty = Descriptor(constant=True)
     argtys = Descriptor(constant=True)
 
-    code_python = Descriptor(constant=True)
     code_llvm = Descriptor(constant=True)
+
+class LLVMFuncDecl(LLVMFunction):
+    def __init__(self, retty, argtys, module, fn_decl):
+        self.retty = retty
+        self.argtys = argtys
+        self.manager = module
+        self.code_llvm = fn_decl
+
+
+class LLVMFuncDef(LLVMFunction):
+    code_python = Descriptor(constant=True)
 
     c_funcptr_type = Descriptor(constant=True)
     c_funcptr = Descriptor(constant=True)
 
     manager = Descriptor(constant=True)
 
-    _workarounds = Descriptor(constant=True)
-
-    # wordarounds
-    RET_BOOL_WORKAROUND='converts boolean return type to int8'
-    ARG_BOOL_WORKAROUND='converts boolean argument type to int8'
-
-    @classmethod
-    def new(cls, module, orig_func, retty, argtys):
-
-        self = cls()
-        self.code_python = orig_func
+    def __init__(self, fnobj, retty, argtys, module, fn_decl):
+        self.code_python = fnobj
+        self.retty = retty
+        self.argtys = argtys
         self.manager = module
-        self.ret=retty
-        self.args=argtys
-
-        self._workarounds = set()
-
-        # Take care of return type
-        if retty is types.Bool: # boolean workaround
-            # Change return type to 8-bit int
-            self.retty = LLVMType(types.Int8)
-            self._workarounds.add(self.RET_BOOL_WORKAROUND)
-        else:
-            self.retty = LLVMType(retty)
-
-        # Take care of argument type
-        self.argtys=[]
-        for argty in argtys:
-            if argty is types.Bool: # boolean workaround
-                self.argtys.append(LLVMType(types.Int8))
-                self._workarounds.add(self.ARG_BOOL_WORKAROUND)
-            else:
-                self.argtys.append(LLVMType(argty))
-
-        return self
-
-    @classmethod
-    def new_declaration(cls, module, fname, retty, argtys):
-        self = cls()
-        self.manager = module
-        self.retty = LLVMType(retty)
-        self.argtys = map(lambda X: LLVMType(X), argtys)
-        self.ret=retty
-        self.args=argtys
-
-        # declare
-        retty = self.retty.type()
-        argtys = map(lambda X: X.type(), self.argtys)
-        self.code_llvm = self.manager.jit_engine.make_function(fname, retty, argtys)
-        if not self.code_llvm.valid():
-            raise FunctionDeclarationError(cls.manager.jit_engine.last_error())
-
-        self.compile = NotImplemented
-        self.run_py = NotImplemented
-        self.run_jit = NotImplemented
-        self.assembly = NotImplemented
-
-        return self
+        self.code_llvm = fn_decl
 
     def compile(self):
         from pymothoa.compiler_errors import CompilerError, wrap_by_function
-
 
         func = self.code_python
         source = inspect.getsource(func)
@@ -101,7 +54,7 @@ class LLVMFunction(object):
         # Code generation for LLVM
         try:
             codegen = LLVMCodeGenerator(
-                            self.manager.jit_engine,
+                            self.code_llvm,
                             self.retty,
                             self.argtys,
                             symbols=func.func_globals
@@ -110,7 +63,6 @@ class LLVMFunction(object):
         except CompilerError as e:
             raise wrap_by_function(e, func)
 
-        self.code_llvm = codegen.function
         self.code_llvm.verify()     # verify generated code
 
         logger.debug('Dump LLVM IR\n%s', self.code_llvm.dump())
@@ -141,10 +93,15 @@ class LLVMFunction(object):
             # Call the function
             retval = self.c_funcptr(*argvals)
         # Apply any workaround to the return value
-        if self.RET_BOOL_WORKAROUND in self._workarounds:
-            retval = bool(retval)
 
         return retval
 
+    __call__ = run_jit
+
+class LLVMFuncDef_BoolRet(LLVMFuncDef):
+    def run_jit(self, *args):
+        retval = super(LLVMFuncDef_BoolRet, self).run_jit(*args)
+        # workaround for boolean return type
+        return bool(retval)
 
     __call__ = run_jit

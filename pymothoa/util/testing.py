@@ -1,3 +1,6 @@
+# Copyright (c) 2012, Siu Kwan Lam
+# All rights reserved.
+
 from time import time
 import inspect
 from contextlib import contextmanager

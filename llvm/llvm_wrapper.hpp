@@ -1,3 +1,11 @@
+/**
+Copyright (c) 2012, Siu Kwan Lam
+All rights reserved.
+
+This file contains SWIG directives that will go into the 'llvm_wrapper.i'.
+**/
+
+
 #ifndef MAMBA_LLVM_WRAPPER_HPP_
 #define MAMBA_LLVM_WRAPPER_HPP_
 

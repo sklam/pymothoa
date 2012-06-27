@@ -1,3 +1,6 @@
+# Copyright (c) 2012, Siu Kwan Lam
+# All rights reserved.
+
 import logging; logging.basicConfig()
 
 from pymothoa.jit import default_module, function      # include function decorator

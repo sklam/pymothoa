@@ -1,3 +1,6 @@
+# Copyright (c) 2012, Siu Kwan Lam
+# All rights reserved.
+#
 # A simple swig interface writer from the header files with special constructs.
 # Better to reduce amount of mistake.
 
@@ -11,35 +14,35 @@ class SwigPrinter:
         self.exporting = False
         self.multiline = False
         self.ostream = ostream
-    
+
     def process(self, line):
         if not self.multiline:
             m = line_marker_regex.match(line)
             if m:
                 token = m.groups()[0].strip()
                 self.token(token)
-                return            
-            
+                return
+
             if line.startswith(multiline_begin_prefix):
                 self.multiline = True
                 return
-                       
-            if self.exporting: 
+
+            if self.exporting:
                 print>>self.ostream, line,
         else:
             if line.startswith(multiline_end_prefix):
                 self.multiline = False
                 return
-            
+
             print>>self.ostream, line,
-            
+
     def token(self, token):
         fn = getattr(self, 'do_%s'%token)
         return fn()
-    
+
     def do_begin(self):
         self.exporting = True
-    
+
     def do_end(self):
         self.exporting = False
 
@@ -48,8 +51,8 @@ def main(infile, outfile):
         swigprinter = SwigPrinter(fout)
         with open(infile) as fin:
             for line in fin:
-                swigprinter.process(line)           
-    
+                swigprinter.process(line)
+
 if __name__ == '__main__':
     try:
         infile, outfile = sys.argv[1], sys.argv[2]
@@ -58,6 +61,6 @@ if __name__ == '__main__':
         print
         print '<input>     C++ header'
         print '<output>    Swig interface'
-        print 
+        print
         sys.exit(1)
     main(infile, outfile)

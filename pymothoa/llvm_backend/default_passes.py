@@ -1,3 +1,6 @@
+# Copyright (c) 2012, Siu Kwan Lam
+# All rights reserved.
+
 DEFAULT_PASSES = filter(lambda S: S[0]!='#', filter(bool, '''
 targetlibinfo
 no-aa

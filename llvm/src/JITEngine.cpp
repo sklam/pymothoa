@@ -1,3 +1,8 @@
+/**
+Copyright (c) 2012, Siu Kwan Lam
+All rights reserved.
+**/
+
 #include "llvm_wrapper.hpp"
 
 #include "llvm/Support/raw_ostream.h"

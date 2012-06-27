@@ -1,6 +1,14 @@
-== Brief ==
-This directory contains an implementation of LLVM-Python binding using SWIG for generating the "glue". The binding only extracts the minimum amount of features or the LLVM to support PyMothoa.
+  LLVM-Binding
+================
+This directory contains an implementation of LLVM-Python binding using SWIG for generating the "glue". The binding only extracts the minimum amount of features 
+from the LLVM to support Pymothoa.
 
-== Build ==
-To build, run `make all` on this directory. This invokes scripts to generate the SWIG "glue" from the llvm_wrapper.hpp. Re-build everytime the llvm_wrapper.hpp is changed.
+---------
+  Build
+---------
+
+Unless you have modified the source code, you do not need to re-generate the
+SWIG "glue."
+
+Run 'make all' in this directory. This invokes scripts to generate the SWIG "glue" from the llvm_wrapper.hpp. Re-build everytime the llvm_wrapper.hpp is changed.
 

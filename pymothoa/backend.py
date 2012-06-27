@@ -1,3 +1,8 @@
+# Copyright (c) 2012, Siu Kwan Lam
+# All rights reserved.
+#
+# Contains the CodeGenerationBase class.
+
 import logging
 import ast
 

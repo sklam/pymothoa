@@ -1,8 +1,12 @@
-'''
-Provides a Descriptor for class definition to protect create constant fields and fields with constrains.
-
-Note: Originally part of my personal python script library PyON, which has not been distributed. This file is copied from my PyON project.
-'''
+# Copyright (c) 2012, Siu Kwan Lam
+# All rights reserved.
+#
+# Provides a Descriptor for class definition to protect create constant fields
+# and fields with constrains.
+#
+# NOTE: Originally part of my personal python script library PyON, which has not
+# been distributed. This file is copied from my PyON project.
+#
 
 instanceof = lambda T: lambda X: isinstance(X, T)
 

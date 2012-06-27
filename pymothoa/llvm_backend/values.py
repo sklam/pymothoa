@@ -1,3 +1,6 @@
+# Copyright (c) 2012, Siu Kwan Lam
+# All rights reserved.
+
 import llvm
 from pymothoa import types
 from pymothoa.util.descriptor import Descriptor, instanceof

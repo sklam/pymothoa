@@ -1,7 +1,10 @@
-'''Note: LLVM does not permit inter module call. Either the caller module is
-linked with the callee module. Or, a function pointer is brought from the callee
-to the caller. (Any alternative?)
-'''
+# Copyright (c) 2012, Siu Kwan Lam
+# All rights reserved.
+#
+# NOTE: LLVM does not permit inter module call. Either the caller module is
+# linked with the callee module. Or, a function pointer is brought from the callee
+# to the caller. (Any alternative?)
+#
 import logging
 logger = logging.getLogger()
 

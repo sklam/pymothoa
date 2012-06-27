@@ -115,6 +115,9 @@ class LLVMIntBinOpMixin(object):
     def op_eq(self, lhs, rhs, builder):
         return builder.icmp(llvm.ICMP_EQ, lhs, rhs)
 
+    def op_noteq(self, lhs, rhs, builder):
+        return builder.icmp(llvm.ICMP_NE, lhs, rhs)
+
     def op_lt(self, lhs, rhs, builder):
         return builder.icmp(llvm.ICMP_SLT, lhs, rhs)
 
@@ -256,6 +259,8 @@ class LLVMUnboundedArray(types.GenericUnboundedArray):
     def cast(self, old, builder):
         if isinstance(old.type, LLVMUnboundedArray):
             return old.value(builder)
+        else:
+            raise TypeError('Casting unbounded-array to something else.')
 
     def ctype(self):
         return ctypes.POINTER(self.elemtype.ctype())

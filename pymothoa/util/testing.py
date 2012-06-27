@@ -64,6 +64,16 @@ class Benchmark:
             yield timer
             timer.stop()
 
+    def times(self, names):
+        line = []
+        for name in names:
+            timer = self.entries[name]
+            dt = timer.duration()
+            line.append(dt)
+        return line
+
+    def names(self):
+        return [entry for entry in self.entries.keys()]
 
 @contextmanager
 def benchmark(title=''):

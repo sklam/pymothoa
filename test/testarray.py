@@ -55,7 +55,7 @@ class Test(unittest.TestCase):
         self.B = map(lambda _: random()+1, range(self.N))
         self.A = np.array(self.B, dtype=c_float)
         self.C = array.array('f', self.B)
-        self.REP = 512
+        self.REP = 2
 
     def test_array(self):
         with benchmark() as bm:

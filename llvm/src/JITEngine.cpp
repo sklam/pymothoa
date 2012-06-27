@@ -40,6 +40,10 @@ JITEngine::JITEngine(std::string modname, std::vector<std::string> passes, bool 
 {
     // Reference: Kaleidoscope: Adding JIT and Optimizer Support
     //            http://llvm.org/docs/tutorial/LangImpl4.html
+    //
+    // Jun 26, 2012
+    //   Actually, It has been changed so much at this point the code
+    //   does not look like the tutorial at all.
     using namespace llvm;
     InitializeNativeTarget();
     InitializeNativeTargetAsmPrinter();
@@ -56,7 +60,7 @@ JITEngine::JITEngine(std::string modname, std::vector<std::string> passes, bool 
 
         EngineBuilder & engine_builder = EngineBuilder(module_).setErrorStr(&ErrStr);
         engine_builder.setEngineKind(EngineKind::JIT); // force JIT
-        // engine_builder.setOptLevel(CodeGenOpt::Aggressive);
+        engine_builder.setOptLevel(CodeGenOpt::Aggressive); // in order to use SSE
 
         the_exec_engine_ = engine_builder.create();
 

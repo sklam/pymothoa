@@ -494,3 +494,13 @@ This error should have been caught by the Python parser.''')
         result = self.generate_binop(type(node.op), target_val, value)
         return self.generate_assign(result, target)
 
+
+    def visit_While(self, node):
+        if node.orelse:
+            raise NotImplementedError('Else in for-loop is not implemented.')
+        self.generate_while(node.test, node.body)
+
+    def generate_while(self, test, body):
+        raise NotImplementedError
+
+

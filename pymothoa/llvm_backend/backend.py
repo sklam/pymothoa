@@ -201,6 +201,33 @@ class LLVMCodeGenerator(CodeGenerationBase):
         if not is_endif_reachable:
             self.builder.unreachable()
 
+    def generate_while(self, test, body):
+        bb_cond = self.new_basic_block('loopcond')
+        bb_body = self.new_basic_block('loopbody')
+        bb_exit = self.new_basic_block('loopexit')
+
+        self.builder.branch(bb_cond)
+
+        # condition
+        self.builder.insert_at(bb_cond)
+        cond = self.visit(test)
+        self.builder.cond_branch(cond.value(self.builder), bb_body, bb_exit)
+
+        # body
+
+        self.builder.insert_at(bb_body)
+
+        for stmt in body:
+            self.visit(stmt)
+        else:
+            self.builder.branch(bb_exit)
+            # Not sure if it is necessary
+            #            if not self.builder.is_block_closed():
+            #                self.builder.branch(bb_exit)
+
+        # end loop
+        self.builder.insert_at(bb_exit)
+
     def generate_for_range(self, counter_ptr, initcount, endcount, step, loopbody):
         self.builder.store(initcount.value(self.builder), counter_ptr.pointer)
 
@@ -223,6 +250,9 @@ class LLVMCodeGenerator(CodeGenerationBase):
             self.visit(stmt)
         else:
             self.builder.branch(bb_incr)
+            # Not sure if it is necessary
+            #            if not self.builder.is_block_closed():
+            #                self.builder.branch(bb_incr)
 
         # incr
         self.builder.insert_at(bb_incr)

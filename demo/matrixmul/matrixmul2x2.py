@@ -1,59 +1,34 @@
 # Copyright (c) 2012, Siu Kwan Lam
 # All rights reserved.
-
+#
+# Matrix-Matrix Multiplication Demo (2x2 Square matrices only)
+#
+# This demo implements a simple vectorized matrix-matrix multiplication
+# for 2x2 squared matrices and compares against the Numpy implementation.
+# You will need Numpy to run this demo.
+#
+# Run to see benchmark against Numpy.
+#
 import logging; logging.basicConfig()
 
-from pymothoa.jit import default_module, function      # include function decorator
+# Import JIT features
+from pymothoa.jit import default_module, function
+
+# Import constructs for the Pymothoa dialect
 from pymothoa.dialect import *
-from pymothoa.types import *                # include all types
+
+# Import the Pymothoa types
+from pymothoa.types import *
 
 import numpy as np
 from ctypes import c_float
 
-
-@function(args=[Array(Float), Array(Float), Array(Float), Int])
-def matrixmul_naive(Pn, Mn, Nn, n):
-    var ( tmp = Float )
-
-    for row in xrange(n):
-        for col in xrange(n):
-            tmp = 0
-            for i in xrange(n):
-                tmp += Mn[row*(n)+i]*Nn[i*(n)+col]
-            Pn[row*(n)+col] = tmp
-
-@function(args=[Array(Float), Array(Float), Array(Float), Int])
-def matrixmul_cached(Pn, Mn, Nn, n):
-    var (
-          NnCache = Array(Float, n),
-          total   = Float,
-        )
-
-    for col in xrange(n):
-        # Cache a column in Nn, and hold it for all rows of Mn.
-        for i in xrange(n):
-            NnCache[i] = Nn[i*(n)+col]
-
-        for row in xrange(n):
-            # Calculate product of an element
-            total = 0
-            for k in xrange(n):
-                total += Mn[row*(n)+k]*NnCache[k]
-
-            # Store elements
-            Pn[row*(n)+col] = total
-
-@function(args=[Array(Float), Array(Float), Array(Float), Int, Int])
-def matrixmul_cached_many(Pn, Mn, Nn, n, ct):
-    if n!=2: return
-    var (dim=Int)
-    dim=n*n
-    for i in xrange(ct):
-        matrixmul_cached(Pn[i*dim:], Mn[i*dim:], Nn[i*dim:], n)
-
+from matrixmul import matrixmul_cached, matrixmul_cached_many
 
 @function(args=[Array(Float), Array(Float), Array(Float), Int])
 def matrixmul_vector2x2(Pn, Mn, Nn, n):
+    '''Vectorized implementation for 2x2 squared matrices.
+    '''
     var (
           vecA = Vector(Float, 4),
           vecB = Vector(Float, 4),
@@ -147,9 +122,10 @@ def main():
 
     Golden = np.matrix(Mn.reshape((n,n))) * np.matrix(Nn.reshape((n,n)))
 
-    Pn = np.zeros(dim, dtype=c_float)
-    matrixmul_naive(Pn, Mn, Nn, n)
-    verify(Golden, Pn, n)
+
+    #    Pn = np.zeros(dim, dtype=c_float)
+    #    matrixmul_naive(Pn, Mn, Nn, n)
+    #    verify(Golden, Pn, n)
 
     Pn = np.zeros(dim, dtype=c_float)
     matrixmul_cached(Pn, Mn, Nn, n)
@@ -176,19 +152,19 @@ def main():
                 C = np.matrix(A.reshape((n,n))) * np.matrix(B.reshape((n,n)))
                 Goldens.append(C)
 
-#        with bm.entry(ENTRY_NAIVE):
-#            for i in xrange(REP):
-#                A = Mn[i*dim:(i+1)*dim]
-#                B = Nn[i*dim:(i+1)*dim]
-#                C = Pn[i*dim:(i+1)*dim]
-#                matrixmul_naive(C, A, B, n)
+        #        with bm.entry(ENTRY_NAIVE):
+        #            for i in xrange(REP):
+        #                A = Mn[i*dim:(i+1)*dim]
+        #                B = Nn[i*dim:(i+1)*dim]
+        #                C = Pn[i*dim:(i+1)*dim]
+        #                matrixmul_naive(C, A, B, n)
 
-#        with bm.entry(ENTRY_CACHED):
-#            for i in xrange(REP):
-#                A = Mn[i*dim:(i+1)*dim]
-#                B = Nn[i*dim:(i+1)*dim]
-#                C = Pn[i*dim:(i+1)*dim]
-#                matrixmul_cached(C, A, B, n)
+        #        with bm.entry(ENTRY_CACHED):
+        #            for i in xrange(REP):
+        #                A = Mn[i*dim:(i+1)*dim]
+        #                B = Nn[i*dim:(i+1)*dim]
+        #                C = Pn[i*dim:(i+1)*dim]
+        #                matrixmul_cached(C, A, B, n)
 
         with bm.entry(ENTRY_CACHED):
             matrixmul_cached_many(Pn, Mn, Nn, n, REP)
@@ -196,11 +172,11 @@ def main():
         with bm.entry(ENTRY_VECTOR):
             matrixmul_vector2x2_many(Qn, Mn, Nn, n, REP)
 
-#        for i in xrange(REP):
-#            P = Pn[i*dim:(i+1)*dim]
-#            Q = Qn[i*dim:(i+1)*dim]
-#            verify(Goldens[i], P, n)
-#            verify(Goldens[i], Q, n)
+        for i in xrange(REP):
+            P = Pn[i*dim:(i+1)*dim]
+            Q = Qn[i*dim:(i+1)*dim]
+            verify(Goldens[i], P, n)
+            verify(Goldens[i], Q, n)
 
     benchmark_summary()
 

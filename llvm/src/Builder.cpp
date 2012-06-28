@@ -70,6 +70,14 @@ Value * Builder::udiv(Value * lhs, Value * rhs, const char * name){
     return builder_.CreateUDiv(lhs, rhs, name);
 }
 
+Value * Builder::umod(Value * lhs, Value * rhs, const char * name){
+    return builder_.CreateURem(lhs, rhs, name);
+}
+
+Value * Builder::smod(Value * lhs, Value * rhs, const char * name){
+    return builder_.CreateSRem(lhs, rhs, name);
+}
+
 Value * Builder::icmp(int op, Value * lhs, Value * rhs, const char * name){
     return builder_.CreateICmp((llvm::CmpInst::Predicate)op, lhs, rhs, name);
 }
@@ -90,6 +98,10 @@ Value * Builder::fmul(Value * lhs, Value * rhs, const char * name){
 
 Value * Builder::fdiv(Value * lhs, Value * rhs, const char * name){
     return builder_.CreateFDiv(lhs, rhs, name);
+}
+
+Value * Builder::fmod(Value * lhs, Value * rhs, const char * name){
+    return builder_.CreateFRem(lhs, rhs, name);
 }
 
 Value * Builder::fcmp(int op, Value * lhs, Value * rhs, const char * name){

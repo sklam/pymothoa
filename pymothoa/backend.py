@@ -35,7 +35,7 @@ class CodeGenerationBase(ast.NodeVisitor):
         except AttributeError as e:
             logger.exception(e)
             logger.error('Unhandled visit to %s', ast.dump(node))
-            raise InternalError(node)
+            raise InternalError(node, 'Not yet implemented.')
         else:
             try:
                 self.__nodes.append(node) # push current node
@@ -55,7 +55,15 @@ class CodeGenerationBase(ast.NodeVisitor):
             # arguments
             self.visit(node.args)
             # function body
-            for stmt in node.body:
+            if (isinstance(node.body[0], ast.Expr) and
+                isinstance(node.body[0].value, ast.Str)):
+                # Python doc string
+                logger.info('Ignoring python doc string.')
+                statements = node.body[1:]
+            else:
+                statements = node.body
+
+            for stmt in statements:
                 self.visit(stmt)
         # close function
 

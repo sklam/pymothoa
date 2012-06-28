@@ -115,6 +115,9 @@ class LLVMIntBinOpMixin(object):
     def op_div(self, lhs, rhs, builder):
         return builder.sdiv(lhs, rhs)
 
+    def op_mod(self, lhs, rhs, builder):
+        return builder.smod(lhs, rhs)
+
     def op_eq(self, lhs, rhs, builder):
         return builder.icmp(llvm.ICMP_EQ, lhs, rhs)
 
@@ -132,6 +135,12 @@ class LLVMIntBinOpMixin(object):
 
     def op_gte(self, lhs, rhs, builder):
         return builder.icmp(llvm.ICMP_SGE, lhs, rhs)
+
+    def op_bitand(self, lhs, rhs, builder):
+        return builder.bitwise_and(lhs, rhs)
+
+    def op_bitor(self, lhs, rhs, builder):
+        return builder.bitwise_or(lhs, rhs)
 
 class LLVMBasicIntMixin(LLVMIntBinOpMixin):
 
@@ -186,6 +195,9 @@ class LLVMRealBinOpMixin(object):
 
     def op_div(self, lhs, rhs, builder):
         return builder.fdiv(lhs, rhs)
+
+    def op_mod(self, lhs, rhs, builder):
+        return builder.fmod(lhs, rhs)
 
     def op_eq(self, lhs, rhs, builder):
         return builder.fcmp(llvm.FCMP_OEQ, lhs, rhs)

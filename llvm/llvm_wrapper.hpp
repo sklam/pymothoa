@@ -204,6 +204,10 @@ public:
 
     llvm::Value * udiv(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
 
+    llvm::Value * umod(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
+
+    llvm::Value * smod(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
+
     llvm::Value * icmp(int op, llvm::Value * lhs, llvm::Value * rhs, const char * name="");
 
     // float operations
@@ -215,6 +219,8 @@ public:
     llvm::Value * fmul(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
 
     llvm::Value * fdiv(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
+
+    llvm::Value * fmod(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
 
     llvm::Value * fcmp(int op, llvm::Value * lhs, llvm::Value * rhs, const char * name="");
 

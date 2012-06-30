@@ -46,7 +46,7 @@ import unittest
 from random import random
 import numpy as np
 import array
-from ctypes import c_float
+from ctypes import c_float, POINTER
 from pymothoa.util.testing import benchmark, relative_error, benchmark_summary
 
 class Test(unittest.TestCase):
@@ -121,6 +121,10 @@ class Test(unittest.TestCase):
             with bm.entry('JIT'):
                 for _ in xrange(self.REP):
                     test_array_reverse(self.A, self.N)
+
+            with bm.entry('JIT-direct'):
+                for _ in xrange(self.REP):
+                    test_array_reverse.c_funcptr(self.A.ctypes.data_as(POINTER(c_float)), self.N)
 
     def test_array_reverse_array(self):
         # array.array

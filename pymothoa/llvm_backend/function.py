@@ -88,14 +88,16 @@ class LLVMFuncDef(LLVMFunction):
     def run_jit(self, *args):
         from itertools import izip
         # Cast the arguments to corresponding types
-        argvals = (aty.argument_adaptor(aval) for aty, aval in izip(self.argtys, args))
+        argvals = []
+        for aty, aval in izip(self.argtys, args):
+            argvals.append(aty.argument_adaptor(aval))
+
         try:
             retval = self.c_funcptr(*argvals)
         except AttributeError: # Has not create binding to the function.
             self.prepare_pointer_to_function()
             # Call the function
             retval = self.c_funcptr(*argvals)
-        # Apply any workaround to the return value
 
         return retval
 

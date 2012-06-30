@@ -20,7 +20,8 @@ This file contains SWIG directives that will go into the 'llvm_wrapper.i'.
 #include "llvm/Target/TargetData.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Vectorize.h"
-#include "llvm/Support/IRBuilder.h"
+#include "llvm/Support/IRBuilder.h" // for 3.1 and prior
+// #include "llvm/IRBuilder.h" // for 3.2svn
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/Threading.h"
 #include <iostream>

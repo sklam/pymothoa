@@ -50,7 +50,7 @@ def benchmark_summary():
 def relative_error(expect, got):
     expect = float(expect)
     got = float(got)
-    return abs(got-expect)/expect
+    return abs(got-expect)/(expect+1e-30)
 
 class Benchmark:
     def __init__(self, name):

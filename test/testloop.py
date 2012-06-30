@@ -24,7 +24,9 @@ def test_whileloop(A, S):
 
 default_module.optimize()
 #-------------------------------------------------------------------------------
+
 import unittest
+
 class Test(unittest.TestCase):
     def test_forloop(self):
         N = 100

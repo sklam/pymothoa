@@ -21,7 +21,7 @@ class LLVMCodeGenerator(CodeGenerationBase):
     retty         = Descriptor(constant=True)
     argtys        = Descriptor(constant=True)
     function      = Descriptor(constant=True)
-
+    entry_block   = Descriptor(constant=True)
 
     def __init__(self, fnobj, retty, argtys, symbols):
         super(LLVMCodeGenerator, self).__init__(symbols)
@@ -40,14 +40,21 @@ class LLVMCodeGenerator(CodeGenerationBase):
         self.symbols[name] = self.function
 
         # make basic block
-        bb_entry = self.function.append_basic_block("entry")
+        self.entry_block = self.function.append_basic_block("entry")
         self.__blockcounter = 0
 
         # make instruction builder
         self.builder = llvm.Builder()
-        self.builder.insert_at(bb_entry)
+        bb_body = self.function.append_basic_block("body")
+        self.builder.insert_at(bb_body)
 
         yield # wait until args & body are generated
+
+        # link entry to body
+        bb_last = self.builder.get_basic_block() # remember last block
+        self.builder.insert_at(self.entry_block)         # goto entry block
+        self.builder.branch(bb_body)             # branch to body
+        self.builder.insert_at(bb_last)                  # return to last block
 
         # close function
         if not self.builder.is_block_closed():
@@ -58,16 +65,17 @@ class LLVMCodeGenerator(CodeGenerationBase):
                 raise MissingReturnError(self.current_node)
 
     def generate_function_arguments(self, arguments):
-        fn_args = self.function.arguments()
-        for i, name in enumerate(arguments):
-            try:
-                var = LLVMVariable(name, self.argtys[i], self.builder)
-            except IndexError:
-                raise FunctionDeclarationError(
-                        self.current_node,
-                        'Actual number of argument mismatch declaration.')
-            self.builder.store(fn_args[i], var.pointer)
-            self.symbols[name] = var
+        with self.relocate_to_entry():
+            fn_args = self.function.arguments()
+            for i, name in enumerate(arguments):
+                try:
+                    var = LLVMVariable(name, self.argtys[i], self.builder)
+                except IndexError:
+                    raise FunctionDeclarationError(
+                            self.current_node,
+                            'Actual number of argument mismatch declaration.')
+                self.builder.store(fn_args[i], var.pointer)
+                self.symbols[name] = var
 
     def generate_call(self, fn, args):
         from function import LLVMFunction
@@ -123,11 +131,13 @@ class LLVMCodeGenerator(CodeGenerationBase):
         return LLVMConstant(LLVMType(types.Double), value)
 
     def generate_declare(self, name, ty):
-        if issubclass(ty, types.GenericBoundedArray): # array
-            return LLVMArrayVariable(name, LLVMType(ty), ty.elemcount.value(self.builder), self.builder)
-        else: # other types
-            realty = LLVMType(ty)
-            return LLVMVariable(name, realty, self.builder)
+        with self.relocate_to_entry():
+            if issubclass(ty, types.GenericBoundedArray): # array
+                return LLVMArrayVariable(name, LLVMType(ty), ty.elemcount.value(self.builder), self.builder)
+            else: # other types
+                realty = LLVMType(ty)
+                return LLVMVariable(name, realty, self.builder)
+
 
     def _call_function(self, fn, args, retty, argtys):
         arg_values = map(lambda X: LLVMTempValue(X.value(self.builder), X.type), args)
@@ -229,6 +239,7 @@ class LLVMCodeGenerator(CodeGenerationBase):
         self.builder.insert_at(bb_exit)
 
     def generate_for_range(self, counter_ptr, initcount, endcount, step, loopbody):
+
         self.builder.store(initcount.value(self.builder), counter_ptr.pointer)
 
         bb_cond = self.new_basic_block('loopcond')
@@ -307,4 +318,13 @@ class LLVMCodeGenerator(CodeGenerationBase):
         lower_val = lower.value(self.builder)
         offsetted = self.builder.gep(ptr_val, lower_val)
         return LLVMTempValue(offsetted, ptr.type)
+
+    @contextmanager
+    def relocate_to_entry(self):
+        # goto entry block
+        bb_last = self.builder.get_basic_block()
+        self.builder.insert_at(self.entry_block)
+        yield # relocated
+        # pickup at last block
+        self.builder.insert_at(bb_last)
 

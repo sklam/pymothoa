@@ -243,7 +243,7 @@ class Test(unittest.TestCase):
             golden = sin(radian)
 
             answer = test_sinf(radian)
-            self.assertLess(relative_error(golden, answer), 0.001/100)
+            self.assertLess(relative_error(golden, answer), 0.01/100)
 
             answer = test_sin(radian)
             self.assertLess(relative_error(golden, answer), 0.001/100)
@@ -256,7 +256,7 @@ class Test(unittest.TestCase):
             golden = cos(radian)
 
             answer = test_cosf(radian)
-            self.assertLess(relative_error(golden, answer), 0.001/100)
+            self.assertLess(relative_error(golden, answer), 0.01/100)
 
             answer = test_cos(radian)
             self.assertLess(relative_error(golden, answer), 0.001/100)
@@ -269,7 +269,7 @@ class Test(unittest.TestCase):
             golden = tan(radian)
 
             answer = test_tanf(radian)
-            self.assertLess(relative_error(golden, answer), 0.001/100)
+            self.assertLess(relative_error(golden, answer), 0.01/100)
 
             answer = test_tan(radian)
             self.assertLess(relative_error(golden, answer), 0.001/100)
@@ -282,7 +282,7 @@ class Test(unittest.TestCase):
             golden = asin(val)
 
             answer = test_asinf(val)
-            self.assertLess(relative_error(golden, answer), 0.001/100)
+            self.assertLess(relative_error(golden, answer), 0.01/100)
 
             answer = test_asin(val)
             self.assertLess(relative_error(golden, answer), 0.001/100)
@@ -308,7 +308,7 @@ class Test(unittest.TestCase):
             golden = atan(val)
 
             answer = test_atanf(val)
-            self.assertLess(relative_error(golden, answer), 0.001/100)
+            self.assertLess(relative_error(golden, answer), 0.01/100)
 
             answer = test_atan(val)
             self.assertLess(relative_error(golden, answer), 0.001/100)
@@ -321,7 +321,7 @@ class Test(unittest.TestCase):
             golden = sinh(val)
 
             answer = test_sinhf(val)
-            self.assertLess(relative_error(golden, answer), 0.001/100)
+            self.assertLess(relative_error(golden, answer), 0.01/100)
 
             answer = test_sinh(val)
             self.assertLess(relative_error(golden, answer), 0.001/100)
@@ -334,7 +334,7 @@ class Test(unittest.TestCase):
             golden = cosh(val)
 
             answer = test_coshf(val)
-            self.assertLess(relative_error(golden, answer), 0.001/100)
+            self.assertLess(relative_error(golden, answer), 0.01/100)
 
             answer = test_cosh(val)
             self.assertLess(relative_error(golden, answer), 0.001/100)
@@ -347,7 +347,7 @@ class Test(unittest.TestCase):
             golden = tanh(val)
 
             answer = test_tanhf(val)
-            self.assertLess(relative_error(golden, answer), 0.001/100)
+            self.assertLess(relative_error(golden, answer), 0.01/100)
 
             answer = test_tanh(val)
             self.assertLess(relative_error(golden, answer), 0.001/100)
@@ -360,7 +360,7 @@ class Test(unittest.TestCase):
             golden = sqrt(val)
 
             answer = test_sqrtf(val)
-            self.assertLess(relative_error(golden, answer), 0.001/100)
+            self.assertLess(relative_error(golden, answer), 0.01/100)
 
             answer = test_sqrt(val)
             self.assertLess(relative_error(golden, answer), 0.001/100)
@@ -374,7 +374,7 @@ class Test(unittest.TestCase):
             golden = pow(val, exp)
 
             answer = test_powf(val, exp)
-            self.assertLess(relative_error(golden, answer), 0.001/100)
+            self.assertLess(relative_error(golden, answer), 0.01/100)
 
             answer = test_pow(val, exp)
             self.assertLess(relative_error(golden, answer), 0.001/100)
@@ -386,7 +386,7 @@ class Test(unittest.TestCase):
             golden = exp(val)
 
             answer = test_expf(val)
-            self.assertLess(relative_error(golden, answer), 0.001/100)
+            self.assertLess(relative_error(golden, answer), 0.01/100)
 
             answer = test_exp(val)
             self.assertLess(relative_error(golden, answer), 0.001/100)
@@ -398,7 +398,7 @@ class Test(unittest.TestCase):
             golden = log(val)
 
             answer = test_logf(val)
-            self.assertLess(relative_error(golden, answer), 0.001/100)
+            self.assertLess(relative_error(golden, answer), 0.01/100)
 
             answer = test_log(val)
             self.assertLess(relative_error(golden, answer), 0.001/100)
@@ -411,7 +411,7 @@ class Test(unittest.TestCase):
             golden = log10(val)
 
             answer = test_log10f(val)
-            self.assertLess(relative_error(golden, answer), 0.001/100)
+            self.assertLess(relative_error(golden, answer), 0.01/100)
 
             answer = test_log10(val)
             self.assertLess(relative_error(golden, answer), 0.001/100)
@@ -460,7 +460,7 @@ class Test(unittest.TestCase):
             golden = fmod(numerator, denominator)
 
             answer = test_fmodf(numerator, denominator)
-            self.assertLess(relative_error(golden, answer), 0.1/100)
+            self.assertLess(relative_error(golden, answer), 0.5/100)
 
             answer = test_fmod(numerator, denominator)
             self.assertLess(relative_error(golden, answer), 0.001/100)

@@ -230,10 +230,10 @@ class LLVMCodeGenerator(CodeGenerationBase):
         for stmt in body:
             self.visit(stmt)
         else:
-            self.builder.branch(bb_exit)
+            self.builder.branch(bb_cond)
             # Not sure if it is necessary
             #            if not self.builder.is_block_closed():
-            #                self.builder.branch(bb_exit)
+            #                self.builder.branch(bb_cond)
 
         # end loop
         self.builder.insert_at(bb_exit)

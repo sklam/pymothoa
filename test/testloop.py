@@ -21,6 +21,14 @@ def test_whileloop(A, S):
         i+=S
     return res
 
+@function(ret=Int, args=[Int])
+def test_countbit(m): # issue 1 by martin.richard
+    var(res = Int)
+    res = 0
+    while m > 0:
+        m &= m-1
+        res += 1
+    return res
 
 default_module.optimize()
 #-------------------------------------------------------------------------------
@@ -40,9 +48,17 @@ class Test(unittest.TestCase):
         N = 100
         for i in xrange(1, N):
             args = N, i
-            answer = test_forloop(*args)
+            answer = test_whileloop(*args)
             logging.debug('args = %s | answer = %s', args, answer)
             self.assertEqual(answer, sum(xrange(0, *args)))
+
+
+    def test_countbit(self):
+        N = 32
+        for i in xrange(N):
+            answer = test_countbit(i)
+            golden = test_countbit.run_py(i)
+            self.assertEqual(golden, answer)
 
 if __name__ == '__main__':
     unittest.main()

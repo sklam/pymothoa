@@ -8,6 +8,7 @@ All rights reserved.
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/FormattedStream.h"
 #include "llvm/Support/Host.h"
+#include "llvm/Transforms/IPO/PassManagerBuilder.h"
 
 #include <sstream>
 
@@ -22,7 +23,7 @@ public:
 };
 
 static
-void CreatePasses(){
+void InitializePasses(){
     using namespace llvm;
     PassRegistry &registry = *PassRegistry::getPassRegistry();
     initializeCore(registry);
@@ -39,7 +40,7 @@ void CreatePasses(){
 
 llvm::ExecutionEngine * JITEngine::the_exec_engine_=0;
 
-JITEngine::JITEngine(std::string modname, std::vector<std::string> passes, bool killOnBadPass)
+JITEngine::JITEngine(std::string modname, int optlevel, bool vectorize)
     : module_(0),
       last_error_("no error")
 {
@@ -53,7 +54,7 @@ JITEngine::JITEngine(std::string modname, std::vector<std::string> passes, bool 
     InitializeNativeTarget();
     InitializeNativeTargetAsmPrinter();
 
-    CreatePasses();
+    InitializePasses();
 
     LLVMContext & Context = getGlobalContext();
 
@@ -80,21 +81,22 @@ JITEngine::JITEngine(std::string modname, std::vector<std::string> passes, bool 
         the_exec_engine_->addModule(module_);
     }
 
-    fpm_ = new PassManager;
+    // Use PassManagerBuilder to populate the pass managers.
+    // (as suggested by Tobias Grosser)
+    PassManagerBuilder pm_builder;
+    pm_builder.OptLevel = optlevel;     // O3
+    pm_builder.Vectorize = vectorize; // ensure vectorizing
 
-    PassRegistry & registry = *PassRegistry::getPassRegistry();
-    for (size_t i=0; i<passes.size(); ++i) {
-        const PassInfo * passinfo = registry.getPassInfo(passes[i]);
-        if (passinfo) {
-            fpm_->add(passinfo->createPass());
-        } else {
-            std::cerr << "Warning: " << passes[i] << " not found! skipped!" << std::endl;
-            if (killOnBadPass) exit(1);
-        }
-    }
+    mpm_ = new PassManager;
+    fpm_ = new FunctionPassManager(module_);
+
+    pm_builder.populateModulePassManager(*mpm_);
+    pm_builder.populateFunctionPassManager(*fpm_);
+
 }
 
 JITEngine::~JITEngine(){
+    delete mpm_;
     delete fpm_;
     // do not delete the_exec_engine_ which lives for the entire lifetime of the process.
     // do not delete module_ because it is owned by the execution engine.
@@ -146,6 +148,15 @@ FunctionAdaptor JITEngine::make_function(const char name[], llvm::Type *result, 
         }
     }
 
+    // Otherwise, function creation okay
+
+    // (Experimental) Set no aliasing for all parameters
+    for (size_t i=0; i<params.size(); ++i){
+        if (params[i]->isPointerTy()){
+            func->setDoesNotAlias(1+i);// zero is the return; therefore, start with 1
+        }
+    }
+
     return FunctionAdaptor(func);
 }
 
@@ -158,7 +169,11 @@ bool JITEngine::verify() const {
 }
 
 void JITEngine::optimize(){
-    fpm_->run(*module_);
+    mpm_->run(*module_);
+}
+
+void JITEngine::optimize_function(FunctionAdaptor fn) const{
+    fpm_->run(*fn.get_function());
 }
 
 void * JITEngine::get_pointer_to_function(FunctionAdaptor fn){

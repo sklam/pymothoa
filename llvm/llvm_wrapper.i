@@ -87,7 +87,7 @@ private:
 
 class JITEngine{
 public:
-    JITEngine(std::string modname, std::vector<std::string> passes, bool killOnBadPass=false);
+    JITEngine(std::string modname, int optlevel=3, bool vectorize=true);
     ~JITEngine();
 
     std::string dump();
@@ -110,6 +110,10 @@ public:
      * Optimize the module.
      */
     void optimize();
+    /**
+     * Optimize the function
+     */
+    void optimize_function(FunctionAdaptor fn) const;
 
     void * get_pointer_to_function(FunctionAdaptor fn);
 
@@ -124,14 +128,15 @@ public:
      * @return registered passes.
      */
     std::string dump_passes();
+
 private:
     JITEngine(const JITEngine&);                 //no impl
     JITEngine & operator = (const JITEngine&);   //no impl
 private:
     llvm::Module * module_;
     static llvm::ExecutionEngine * the_exec_engine_; //class-member singleton
-    //llvm::FunctionPassManager * fpm_;
-    llvm::PassManager * fpm_;
+    llvm::FunctionPassManager * fpm_; // run after function generation to reduce function in memory (as documented in LLVM)
+    llvm::PassManager * mpm_;   // the primary pass manager
 
     std::string last_error_;
 };

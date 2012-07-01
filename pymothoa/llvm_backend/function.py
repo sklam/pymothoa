@@ -66,6 +66,7 @@ class LLVMFuncDef(LLVMFunction):
             raise wrap_by_function(e, func)
 
         self.code_llvm.verify()     # verify generated code
+        self.manager.jit_engine.optimize_function(self.code_llvm) # optimize generated code to reduce space
 
         logger.debug('Dump LLVM IR\n%s', self.code_llvm.dump())
 

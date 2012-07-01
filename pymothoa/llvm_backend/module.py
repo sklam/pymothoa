@@ -10,15 +10,14 @@ logger = logging.getLogger()
 
 from pymothoa import types
 from pymothoa.util.descriptor import Descriptor, instanceof
-from default_passes import DEFAULT_PASSES
 from types import LLVMType
 import llvm # binding
 
 class LLVMModule(object):
     jit_engine = Descriptor(constant=True)
 
-    def __init__(self, name, passes=DEFAULT_PASSES):
-        self.jit_engine = llvm.JITEngine(name, DEFAULT_PASSES, True)
+    def __init__(self, name, optlevel=3, vectorize=True):
+        self.jit_engine = llvm.JITEngine(name, optlevel, vectorize)
 
     def optimize(self):
         self.jit_engine.optimize()

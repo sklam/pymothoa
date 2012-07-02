@@ -48,6 +48,18 @@ Value * Builder::bitwise_neg(Value * value, const char * name){
     return builder_.CreateNeg(value, name);
 }
 
+Value * Builder::shl(Value * value, Value * amt, const char * name){
+    return builder_.CreateShl(value, amt, name);
+}
+
+Value * Builder::lshr(Value * value, Value * amt, const char * name){
+    return builder_.CreateLShr(value, amt, name);
+}
+
+Value * Builder::ashr(Value * value, Value * amt, const char * name){
+    return builder_.CreateAShr(value, amt, name);
+}
+
 // integer operations
 
 Value * Builder::add(Value * lhs, Value * rhs, const char * name){

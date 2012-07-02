@@ -142,6 +142,12 @@ class LLVMIntBinOpMixin(object):
     def op_bitor(self, lhs, rhs, builder):
         return builder.bitwise_or(lhs, rhs)
 
+    def op_lshift(self, lhs, rhs, builder):
+        return builder.shl(lhs, rhs)
+
+    def op_rshift(self, lhs, rhs, builder):
+        return builder.ashr(lhs, rhs)
+
 class LLVMBasicIntMixin(LLVMIntBinOpMixin):
 
     def argument_adaptor(self, val):

@@ -43,6 +43,9 @@ Hint: All variables must be defined using var ( Name = Type, ... ) construct pri
 class InvalidUseOfConstruct(CompilerError):
     message = 'Invalid use of construct.'
 
+class OperatorError(CompilerError):
+    message = 'Operator is not supported by type'
+
 class MissingReturnError(CompilerError):
     message = 'Function missing return statement.'
 

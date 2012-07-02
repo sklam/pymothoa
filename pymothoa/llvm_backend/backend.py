@@ -121,8 +121,12 @@ class LLVMCodeGenerator(CodeGenerationBase):
         lval = ty.cast(lhs, self.builder)
         rval = ty.cast(rhs, self.builder)
 
-        fn = getattr(ty, 'op_%s'%op_class.__name__.lower())
-        return LLVMTempValue(fn(lval, rval, self.builder), ty)
+        try:
+            fn = getattr(ty, 'op_%s'%op_class.__name__.lower())
+        except AttributeError as e:
+            raise OperatorError(self.current_node, 'Debug detail: %s'%str(e))
+        else:
+            return LLVMTempValue(fn(lval, rval, self.builder), ty)
 
     def generate_constant_int(self, value):
         return LLVMConstant(LLVMType(types.Int), value)

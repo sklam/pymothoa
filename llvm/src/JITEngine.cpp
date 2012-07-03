@@ -8,6 +8,7 @@ All rights reserved.
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/FormattedStream.h"
 #include "llvm/Support/Host.h"
+#include "llvm/Support/TargetRegistry.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 
 #include <sstream>
@@ -58,7 +59,17 @@ JITEngine::JITEngine(std::string modname, int optlevel, bool vectorize)
 
     LLVMContext & Context = getGlobalContext();
 
+    // Check host target
+    const Target * host_target = TargetRegistry::getClosestTargetForJIT(last_error_);
+    if (0==host_target){
+        std::cerr << "Cannot create JIT target for the host." << std::endl;
+        std::cerr << last_error_ << std::endl;
+        exit(1);
+    }
+
     module_ = new Module(modname, Context);
+    module_->setTargetTriple(sys::getDefaultTargetTriple());
+
     if (0==the_exec_engine_) {// First instance of JITEngine
 
         // Create the JIT.  This takes ownership of the module.
@@ -80,6 +91,9 @@ JITEngine::JITEngine(std::string modname, int optlevel, bool vectorize)
         // Simply add new module to the already existent execution-engine
         the_exec_engine_->addModule(module_);
     }
+
+    // Set the data layout (is it necessary?)
+    module_->setDataLayout(the_exec_engine_->getTargetData()->getStringRepresentation());
 
     // Use PassManagerBuilder to populate the pass managers.
     // (as suggested by Tobias Grosser)

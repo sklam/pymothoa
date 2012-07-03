@@ -30,19 +30,19 @@ def benchmark_summary():
     for bm in BENCHMARK_SUMMARY:
         print
         print bm.name
-        fastest_dt = None
-        for entry, timer in bm.entries.items():
-            dt = timer.duration()
-            print '\t-', entry, '%.2gs'%dt
-            if fastest_dt is None or dt < fastest_dt:
-                fastest_dt = dt
-                fastest_entry = entry
-        print '\tFastest entry is', fastest_entry
-        for entry, timer in bm.entries.items():
-            if entry != fastest_entry:
-                dt = timer.duration()
-                speedup = dt / fastest_dt
-                print '\t%.2fx speedup over %s'%(speedup, entry)
+
+        # sort entries by duration
+        sorted_entries = sorted((timer.duration(), entry)
+                                for entry, timer in bm.entries.items())
+
+        fastest = sorted_entries[0]
+
+        print '\tFastest entry is', fastest[1]
+
+        fastest_dt = fastest[0]
+        for dt, name in sorted_entries:
+            speedup = dt / fastest_dt
+            print '\t%.2fx speedup over %s (%.2gs)'%(speedup, name, dt)
 
     print '='*80
     print

@@ -515,6 +515,7 @@ class Builder(_object):
     def insert_at(self, *args): return _llvm_wrapper.Builder_insert_at(self, *args)
     def get_basic_block(self): return _llvm_wrapper.Builder_get_basic_block(self)
     def phi(self, *args): return _llvm_wrapper.Builder_phi(self, *args)
+    def intrinsic_pow(self, *args): return _llvm_wrapper.Builder_intrinsic_pow(self, *args)
     def bitwise_and(self, *args): return _llvm_wrapper.Builder_bitwise_and(self, *args)
     def bitwise_or(self, *args): return _llvm_wrapper.Builder_bitwise_or(self, *args)
     def bitwise_xor(self, *args): return _llvm_wrapper.Builder_bitwise_xor(self, *args)

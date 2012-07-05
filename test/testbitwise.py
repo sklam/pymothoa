@@ -14,6 +14,10 @@ def test_bitwise_or(A, B):
     return A | B
 
 @function(ret=Int, args=[Int, Int])
+def test_bitwise_xor(A, B):
+    return A ^ B
+
+@function(ret=Int, args=[Int, Int])
 def test_lshift(A, n):
     return A << n
 
@@ -40,6 +44,11 @@ class Test(unittest.TestCase):
         for _ in xrange(self.REP):
             args = (randint(0, 100), randint(0, 100))
             self.assertEqual(test_bitwise_or(*args), test_bitwise_or.run_py(*args))
+
+    def test_bitwise_xor(self):
+        for _ in xrange(self.REP):
+            args = (randint(0, 100), randint(0, 100))
+            self.assertEqual(test_bitwise_xor(*args), test_bitwise_xor.run_py(*args))
 
     def test_lshift(self):
         for amt in xrange(31):

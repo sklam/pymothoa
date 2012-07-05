@@ -4,6 +4,7 @@ All rights reserved.
 **/
 
 #include "llvm_wrapper.hpp"
+#include "llvm/Intrinsics.h"
 
 Builder::Builder()
     : builder_(llvm::getGlobalContext())
@@ -33,6 +34,28 @@ Value * Builder::phi(llvm::Type* type, std::vector<llvm::BasicBlock*> in_blocks,
     return node;
 }
 
+// instrinsic
+Value * Builder::intrinsic_pow(Value * val, Value * power, const char * name){
+    using namespace llvm;
+
+    llvm::Module * M = builder_.GetInsertBlock()->getParent()->getParent();
+
+    // Automatically determine the use of pow or powi
+    Intrinsic::ID id;
+    if ( power->getType()->isIntegerTy() ){
+        id = Intrinsic::powi;
+    }else{
+        id = Intrinsic::pow;
+    }
+
+    Function * function = Intrinsic::getDeclaration(M, id, val->getType());
+
+    assert(0!=fnty && "Cannot get intrinsic");
+
+    Value * args[] = { val, power };
+
+    return builder_.CreateCall(function, args, name);
+}
 
 // bitwise operations
 

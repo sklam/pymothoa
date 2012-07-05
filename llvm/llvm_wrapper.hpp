@@ -195,6 +195,10 @@ public:
 
     llvm::Value * phi(llvm::Type * type, std::vector<llvm::BasicBlock*> in_blocks, std::vector<llvm::Value*> in_values, const char* name="");
 
+    // intrinsic
+    llvm::Value * intrinsic_pow(llvm::Value * val, llvm::Value * power, const char * name="");
+
+
     // bitwise operations
     llvm::Value * bitwise_and(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
 

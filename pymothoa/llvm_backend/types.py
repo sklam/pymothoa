@@ -124,6 +124,25 @@ class LLVMIntBinOpMixin(object):
     def op_mod(self, lhs, rhs, builder):
         return builder.smod(lhs, rhs)
 
+    def op_pow(self, lhs, rhs, builder):
+        # Workaround:
+        # Instrinsic_pow can only accept float types.
+        # Convert to Double (prefer precision over speed?)
+        if self.signed:
+            lhs_as_float = builder.sitofp(lhs, LLVMType(types.Double).type())
+        else:
+            lhs_as_float = builder.sitofp(lhs, LLVMType(types.Double).type())
+
+        res = builder.intrinsic_pow(lhs_as_float, rhs)
+
+        # Convert result back to integer type
+        if self.signed:
+            res_as_int = builder.fptosi(res, self.type())
+        else:
+            res_as_int = builder.fptosi(res, self.type())
+
+        return res_as_int
+
     def op_eq(self, lhs, rhs, builder):
         return builder.icmp(llvm.ICMP_EQ, lhs, rhs)
 
@@ -147,6 +166,9 @@ class LLVMIntBinOpMixin(object):
 
     def op_bitor(self, lhs, rhs, builder):
         return builder.bitwise_or(lhs, rhs)
+
+    def op_bitxor(self, lhs, rhs, builder):
+        return builder.bitwise_xor(lhs, rhs)
 
     def op_lshift(self, lhs, rhs, builder):
         return builder.shl(lhs, rhs)
@@ -210,6 +232,9 @@ class LLVMRealBinOpMixin(object):
 
     def op_mod(self, lhs, rhs, builder):
         return builder.fmod(lhs, rhs)
+
+    def op_pow(self, lhs, rhs, builder):
+        return builder.intrinsic_pow(lhs, rhs)
 
     def op_eq(self, lhs, rhs, builder):
         return builder.fcmp(llvm.FCMP_OEQ, lhs, rhs)

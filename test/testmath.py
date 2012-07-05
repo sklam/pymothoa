@@ -295,7 +295,7 @@ class Test(unittest.TestCase):
             golden = acos(val)
 
             answer = test_acosf(val)
-            self.assertLess(relative_error(golden, answer), 0.001/100)
+            self.assertLess(relative_error(golden, answer), 0.01/100)
 
             answer = test_acos(val)
             self.assertLess(relative_error(golden, answer), 0.001/100)

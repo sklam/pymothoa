@@ -16851,6 +16851,160 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_Builder_intrinsic_pow__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Builder *arg1 = (Builder *) 0 ;
+  llvm::Value *arg2 = (llvm::Value *) 0 ;
+  llvm::Value *arg3 = (llvm::Value *) 0 ;
+  char *arg4 = (char *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  int res4 ;
+  char *buf4 = 0 ;
+  int alloc4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  llvm::Value *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:Builder_intrinsic_pow",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Builder, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Builder_intrinsic_pow" "', argument " "1"" of type '" "Builder *""'"); 
+  }
+  arg1 = reinterpret_cast< Builder * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Builder_intrinsic_pow" "', argument " "2"" of type '" "llvm::Value *""'"); 
+  }
+  arg2 = reinterpret_cast< llvm::Value * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Builder_intrinsic_pow" "', argument " "3"" of type '" "llvm::Value *""'"); 
+  }
+  arg3 = reinterpret_cast< llvm::Value * >(argp3);
+  res4 = SWIG_AsCharPtrAndSize(obj3, &buf4, NULL, &alloc4);
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "Builder_intrinsic_pow" "', argument " "4"" of type '" "char const *""'");
+  }
+  arg4 = reinterpret_cast< char * >(buf4);
+  result = (llvm::Value *)(arg1)->intrinsic_pow(arg2,arg3,(char const *)arg4);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (alloc4 == SWIG_NEWOBJ) delete[] buf4;
+  return resultobj;
+fail:
+  if (alloc4 == SWIG_NEWOBJ) delete[] buf4;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Builder_intrinsic_pow__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Builder *arg1 = (Builder *) 0 ;
+  llvm::Value *arg2 = (llvm::Value *) 0 ;
+  llvm::Value *arg3 = (llvm::Value *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  llvm::Value *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:Builder_intrinsic_pow",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Builder, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Builder_intrinsic_pow" "', argument " "1"" of type '" "Builder *""'"); 
+  }
+  arg1 = reinterpret_cast< Builder * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Builder_intrinsic_pow" "', argument " "2"" of type '" "llvm::Value *""'"); 
+  }
+  arg2 = reinterpret_cast< llvm::Value * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_llvm__Value, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Builder_intrinsic_pow" "', argument " "3"" of type '" "llvm::Value *""'"); 
+  }
+  arg3 = reinterpret_cast< llvm::Value * >(argp3);
+  result = (llvm::Value *)(arg1)->intrinsic_pow(arg2,arg3);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_llvm__Value, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Builder_intrinsic_pow(PyObject *self, PyObject *args) {
+  int argc;
+  PyObject *argv[5];
+  int ii;
+  
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = args ? (int)PyObject_Length(args) : 0;
+  for (ii = 0; (ii < 4) && (ii < argc); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 3) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_Builder, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_llvm__Value, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_llvm__Value, 0);
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          return _wrap_Builder_intrinsic_pow__SWIG_1(self, args);
+        }
+      }
+    }
+  }
+  if (argc == 4) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_Builder, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[1], &vptr, SWIGTYPE_p_llvm__Value, 0);
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(argv[2], &vptr, SWIGTYPE_p_llvm__Value, 0);
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          int res = SWIG_AsCharPtrAndSize(argv[3], 0, NULL, 0);
+          _v = SWIG_CheckState(res);
+          if (_v) {
+            return _wrap_Builder_intrinsic_pow__SWIG_0(self, args);
+          }
+        }
+      }
+    }
+  }
+  
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'Builder_intrinsic_pow'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    Builder::intrinsic_pow(llvm::Value *,llvm::Value *,char const *)\n"
+    "    Builder::intrinsic_pow(llvm::Value *,llvm::Value *)\n");
+  return 0;
+}
+
+
 SWIGINTERN PyObject *_wrap_Builder_bitwise_and__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Builder *arg1 = (Builder *) 0 ;
@@ -22896,6 +23050,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Builder_insert_at", _wrap_Builder_insert_at, METH_VARARGS, NULL},
 	 { (char *)"Builder_get_basic_block", _wrap_Builder_get_basic_block, METH_VARARGS, NULL},
 	 { (char *)"Builder_phi", _wrap_Builder_phi, METH_VARARGS, NULL},
+	 { (char *)"Builder_intrinsic_pow", _wrap_Builder_intrinsic_pow, METH_VARARGS, NULL},
 	 { (char *)"Builder_bitwise_and", _wrap_Builder_bitwise_and, METH_VARARGS, NULL},
 	 { (char *)"Builder_bitwise_or", _wrap_Builder_bitwise_or, METH_VARARGS, NULL},
 	 { (char *)"Builder_bitwise_xor", _wrap_Builder_bitwise_xor, METH_VARARGS, NULL},

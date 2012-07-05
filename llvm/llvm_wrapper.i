@@ -161,7 +161,9 @@ public:
 
     llvm::Value * bitwise_or(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
 
-    llvm::Value * bitwise_neg(llvm::Value * value, const char * name="");
+    llvm::Value * bitwise_xor(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
+
+    llvm::Value * bitwise_not(llvm::Value * val, const char * name="");
 
     llvm::Value * shl(llvm::Value * value, llvm::Value * amt, const char * name="");
 
@@ -186,6 +188,8 @@ public:
     llvm::Value * smod(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
 
     llvm::Value * icmp(int op, llvm::Value * lhs, llvm::Value * rhs, const char * name="");
+
+    llvm::Value * negative(llvm::Value * value, const char * name="");
 
     // float operations
 

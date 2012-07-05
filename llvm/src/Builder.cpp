@@ -44,8 +44,12 @@ Value * Builder::bitwise_or(Value * lhs, Value * rhs, const char * name){
     return builder_.CreateOr(lhs, rhs, name);
 }
 
-Value * Builder::bitwise_neg(Value * value, const char * name){
-    return builder_.CreateNeg(value, name);
+Value * Builder::bitwise_xor(Value * lhs, Value * rhs, const char * name){
+    return builder_.CreateXor(lhs, rhs, name);
+}
+
+Value * Builder::bitwise_not(Value * val, const char * name){
+    return builder_.CreateNot(val, name);
 }
 
 Value * Builder::shl(Value * value, Value * amt, const char * name){
@@ -92,6 +96,10 @@ Value * Builder::smod(Value * lhs, Value * rhs, const char * name){
 
 Value * Builder::icmp(int op, Value * lhs, Value * rhs, const char * name){
     return builder_.CreateICmp((llvm::CmpInst::Predicate)op, lhs, rhs, name);
+}
+
+Value * Builder::negative(Value * value, const char * name){
+    return builder_.CreateNeg(value, name);
 }
 
 // float operations

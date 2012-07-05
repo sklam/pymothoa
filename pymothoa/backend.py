@@ -23,6 +23,7 @@ class CodeGenerationBase(ast.NodeVisitor):
         globalsymbols -- A dict containing global symbols for the function.
         '''
         self.symbols = globalsymbols.copy()
+        self.symbols.update({'True': 1, 'False':0})
         self.__nodes = []
 
     @property
@@ -67,6 +68,13 @@ class CodeGenerationBase(ast.NodeVisitor):
                 self.visit(stmt)
         # close function
 
+    def visit_Print(self, node):
+        raise NotImplementedError('''Print statement is not supported yet.
+There are plans to include "print" but it will take some time.''')
+
+    def visit_Str(self, node):
+        raise NotImplementedError('''String has not been implemented yet.
+There are plans to include strings but it will take some time.''')
 
     def visit_arguments(self, node):
         if node.vararg or node.kwarg or node.defaults:
@@ -401,6 +409,7 @@ This error should have been caught by the Python parser.''')
             try: # lookup in the symbol table
                 val = self.symbols[node.id]
             except KeyError: # does not exist
+                print ast.dump(node)
                 raise UndefinedSymbolError(node)
             else: # load from stack
                 if isinstance(val, int) or isinstance(val, long):

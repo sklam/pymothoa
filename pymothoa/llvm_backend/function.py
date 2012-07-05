@@ -63,6 +63,7 @@ class LLVMFuncDef(LLVMFunction):
                         )
             codegen.visit(tree.body[0])
         except CompilerError as e:
+            logger.exception(e)
             raise wrap_by_function(e, func)
 
         self.code_llvm.verify()     # verify generated code

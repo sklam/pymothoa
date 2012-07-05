@@ -6,8 +6,8 @@ This file contains SWIG directives that will go into the 'llvm_wrapper.i'.
 **/
 
 
-#ifndef MAMBA_LLVM_WRAPPER_HPP_
-#define MAMBA_LLVM_WRAPPER_HPP_
+#ifndef PYMOTHOA_LLVM_WRAPPER_HPP_
+#define PYMOTHOA_LLVM_WRAPPER_HPP_
 
 #include "llvm/DerivedTypes.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
@@ -16,12 +16,15 @@ This file contains SWIG directives that will go into the 'llvm_wrapper.i'.
 #include "llvm/Module.h"
 #include "llvm/PassManager.h"
 #include "llvm/Analysis/Verifier.h"
-#include "llvm/Analysis/Passes.h"
 #include "llvm/Target/TargetData.h"
-#include "llvm/Transforms/Scalar.h"
-#include "llvm/Transforms/Vectorize.h"
-#include "llvm/Support/IRBuilder.h" // for 3.1 and prior
-// #include "llvm/IRBuilder.h" // for 3.2svn
+#include "llvm/LinkAllPasses.h"
+
+#if LLVM_VERSION_MAJOR>=3 && LLVM_VERSION_MINOR>=2
+    #include "llvm/IRBuilder.h" // for 3.2svn
+#else
+    #include "llvm/Support/IRBuilder.h" // for 3.1 and prior
+#endif
+
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/Threading.h"
 #include <iostream>
@@ -197,7 +200,9 @@ public:
 
     llvm::Value * bitwise_or(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
 
-    llvm::Value * bitwise_neg(llvm::Value * value, const char * name="");
+    llvm::Value * bitwise_xor(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
+
+    llvm::Value * bitwise_not(llvm::Value * val, const char * name="");
 
     llvm::Value * shl(llvm::Value * value, llvm::Value * amt, const char * name="");
 
@@ -222,6 +227,8 @@ public:
     llvm::Value * smod(llvm::Value * lhs, llvm::Value * rhs, const char * name="");
 
     llvm::Value * icmp(int op, llvm::Value * lhs, llvm::Value * rhs, const char * name="");
+
+    llvm::Value * negative(llvm::Value * value, const char * name="");
 
     // float operations
 
@@ -300,4 +307,4 @@ private:
 };
 
 //!swig-end
-#endif  //MAMBA_LLVM_WRAPPER_HPP_
+#endif  //PYMOTHOA_LLVM_WRAPPER_HPP_

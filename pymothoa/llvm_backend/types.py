@@ -91,16 +91,22 @@ class LLVMBool(types.Bool):
     def type(self):
         return llvm.TypeFactory.make_int(1) # 1-bit integer
 
+    def constant(self, val):
+        if type(val) is not int:
+            raise TypeError(type(val))
+        else:
+            return llvm.ConstantFactory.make_int(self.type(), val)
+
     def cast(self, old, builder):
         if old.type == self:
             return old.value(builder)
         elif isinstance(old.type, types.GenericInt) or isinstance(old.type, types.GenericReal):
-            return old.type.op_eq(old.value(builder), old.type.constant(0), builder)
+            return old.type.op_noteq(old.value(builder), old.type.constant(0), builder)
         else:
             raise TypeError('Cannot cast to boolean.'+'%s %s'%(old.type, self))
 
     def op_not(self, value, builder):
-        return builder.bitwise_neg(value)
+        return builder.bitwise_not(value)
 
 class LLVMIntBinOpMixin(object):
     def op_add(self, lhs, rhs, builder):
@@ -207,6 +213,9 @@ class LLVMRealBinOpMixin(object):
 
     def op_eq(self, lhs, rhs, builder):
         return builder.fcmp(llvm.FCMP_OEQ, lhs, rhs)
+
+    def op_noteq(self, lhs, rhs, builder):
+        return builder.fcmp(llvm.FCMP_ONE, lhs, rhs)
 
     def op_lt(self, lhs, rhs, builder):
         return builder.fcmp(llvm.FCMP_OLT, lhs, rhs)

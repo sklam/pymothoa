@@ -149,8 +149,9 @@ class Test(unittest.TestCase):
 
         module = default_module.module
         passes = module.jit_engine.dump_passes()
+        print passes
 
-        mapping = dict(map(do_strip, line.split(':'))
+        mapping = dict(map(do_strip, line.split(':', 1))
                            for line in passes.splitlines())
         for p in include_passes:
             self.assertIn(p, mapping)

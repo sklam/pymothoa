@@ -189,7 +189,7 @@ class LLVMCodeGenerator(CodeGenerationBase):
         bb_endif = self.new_basic_block('endif')
         is_endif_reachable = False
 
-        boolean = test.value(self.builder)
+        boolean = self.ensure_boolean(test)
         self.builder.cond_branch(boolean, bb_if, bb_else)
 
         # true branch
@@ -225,7 +225,7 @@ class LLVMCodeGenerator(CodeGenerationBase):
         # condition
         self.builder.insert_at(bb_cond)
         cond = self.visit(test)
-        self.builder.cond_branch(cond.value(self.builder), bb_body, bb_exit)
+        self.builder.cond_branch(self.ensure_boolean(cond), bb_body, bb_exit)
 
         # body
 
@@ -332,3 +332,5 @@ class LLVMCodeGenerator(CodeGenerationBase):
         # pickup at last block
         self.builder.insert_at(bb_last)
 
+    def ensure_boolean(self, value):
+        return LLVMType(types.Bool).cast(value, self.builder)
